@@ -26,7 +26,7 @@ import {
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { useKV } from '@github/spark/hooks'
-import { CaseReport, VolunteerActivity, VolunteerProfile } from '@/lib/types'
+import { CaseReport, VolunteerActivity, VolunteerProfile as VolunteerProfileType } from '@/lib/types'
 import { ReportCase } from '@/components/ReportCase'
 import { CaseList } from '@/components/CaseList'
 import { VolunteerSettings } from '@/components/VolunteerSettings'
@@ -43,7 +43,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>('cases')
   const [cases, setCases] = useKV<CaseReport[]>('solidarity-cases', [])
   const [activities, setActivities] = useKV<VolunteerActivity[]>('volunteer-activities', [])
-  const [volunteers, setVolunteers] = useKV<VolunteerProfile[]>('volunteer-profiles', [])
+  const [volunteers, setVolunteers] = useKV<VolunteerProfileType[]>('volunteer-profiles', [])
   const [currentVolunteerId, setCurrentVolunteerId] = useState('volunteer-1') // Mock current user
   const [selectedVolunteerId, setSelectedVolunteerId] = useState<string | null>(null)
   const [stats, setStats] = useState({

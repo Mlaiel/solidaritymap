@@ -21,11 +21,12 @@ import {
   Info,
   Phone,
   Shield,
-  ChartBar
+  ChartBar,
+  UserCircle
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { useKV } from '@github/spark/hooks'
-import { CaseReport, VolunteerActivity } from '@/lib/types'
+import { CaseReport, VolunteerActivity, VolunteerProfile } from '@/lib/types'
 import { ReportCase } from '@/components/ReportCase'
 import { CaseList } from '@/components/CaseList'
 import { VolunteerSettings } from '@/components/VolunteerSettings'
@@ -33,12 +34,18 @@ import { QuickStartGuide } from '@/components/QuickStartGuide'
 import { VoiceControls } from '@/components/VoiceControls'
 import { DebugInfo } from '@/components/DebugInfo'
 import { VolunteerDashboard } from '@/components/VolunteerDashboard'
-import { sampleCases } from '@/lib/sampleData'
+import { VolunteerDirectory } from '@/components/VolunteerDirectory'
+import { VolunteerProfile } from '@/components/VolunteerProfile'
+import { EditVolunteerProfile } from '@/components/EditVolunteerProfile'
+import { sampleCases, sampleVolunteerProfiles } from '@/lib/sampleData'
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('cases')
   const [cases, setCases] = useKV<CaseReport[]>('solidarity-cases', [])
   const [activities, setActivities] = useKV<VolunteerActivity[]>('volunteer-activities', [])
+  const [volunteers, setVolunteers] = useKV<VolunteerProfile[]>('volunteer-profiles', [])
+  const [currentVolunteerId, setCurrentVolunteerId] = useState('volunteer-1') // Mock current user
+  const [selectedVolunteerId, setSelectedVolunteerId] = useState<string | null>(null)
   const [stats, setStats] = useState({
     total: 0,
     open: 0,
@@ -62,7 +69,7 @@ export default function App() {
     if (updatedCase.status === 'helped' || updatedCase.status === 'in-progress') {
       const newActivity: VolunteerActivity = {
         id: `activity-${Date.now()}`,
-        volunteerId: 'current-volunteer',
+        volunteerId: currentVolunteerId,
         caseId: updatedCase.id,
         action: updatedCase.status === 'helped' ? 'helped' : 'started-helping',
         timestamp: new Date().toISOString(),
@@ -82,7 +89,7 @@ export default function App() {
     // Create activity record for new reports
     const newActivity: VolunteerActivity = {
       id: `activity-${Date.now()}`,
-      volunteerId: 'current-volunteer',
+      volunteerId: currentVolunteerId,
       caseId: newReport.id,
       action: 'reported',
       timestamp: new Date().toISOString(),
@@ -99,12 +106,13 @@ export default function App() {
 
   const loadSampleData = () => {
     setCases(sampleCases)
+    setVolunteers(sampleVolunteerProfiles)
     
     // Create sample activities
     const sampleActivities: VolunteerActivity[] = [
       {
         id: 'sample-activity-1',
-        volunteerId: 'current-volunteer',
+        volunteerId: 'volunteer-1',
         caseId: sampleCases[0]?.id || 'sample-1',
         action: 'helped',
         timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
@@ -113,7 +121,7 @@ export default function App() {
       },
       {
         id: 'sample-activity-2',
-        volunteerId: 'current-volunteer',
+        volunteerId: 'volunteer-2',
         caseId: sampleCases[1]?.id || 'sample-2',
         action: 'started-helping',
         timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
@@ -122,7 +130,7 @@ export default function App() {
       },
       {
         id: 'sample-activity-3',
-        volunteerId: 'current-volunteer',
+        volunteerId: 'volunteer-1',
         caseId: sampleCases[2]?.id || 'sample-3',
         action: 'reported',
         timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
@@ -175,8 +183,24 @@ export default function App() {
             </div>
 
             {/* Voice Controls */}
-            <div className="hidden md:block">
+            <div className="hidden md:flex items-center gap-3">
               <VoiceControls />
+              
+              {/* Current User Profile */}
+              {volunteers.find(v => v.id === currentVolunteerId) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedVolunteerId(currentVolunteerId)
+                    setActiveTab('volunteers')
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <UserCircle size={20} />
+                  <span className="hidden lg:inline">My Profile</span>
+                </Button>
+              )}
             </div>
           </div>
 
@@ -203,7 +227,7 @@ export default function App() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Tab Navigation */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <TabsList className="grid w-full sm:w-auto grid-cols-4 sm:grid-cols-4">
+            <TabsList className="grid w-full sm:w-auto grid-cols-5 sm:grid-cols-5">
               <TabsTrigger value="cases" className="flex items-center gap-2">
                 <List size={16} />
                 <span className="hidden sm:inline">Cases</span>
@@ -211,6 +235,10 @@ export default function App() {
               <TabsTrigger value="dashboard" className="flex items-center gap-2">
                 <ChartBar size={16} />
                 <span className="hidden sm:inline">Dashboard</span>
+              </TabsTrigger>
+              <TabsTrigger value="volunteers" className="flex items-center gap-2">
+                <Users size={16} />
+                <span className="hidden sm:inline">Volunteers</span>
               </TabsTrigger>
               <TabsTrigger value="report" className="flex items-center gap-2">
                 <Plus size={16} />
@@ -240,7 +268,7 @@ export default function App() {
                   <Badge variant="outline" className="text-xs">
                     Live updates
                   </Badge>
-                  {cases.length === 0 && (
+                  {(cases.length === 0 || volunteers.length === 0) && (
                     <Button 
                       variant="outline" 
                       size="sm" 
@@ -257,6 +285,37 @@ export default function App() {
 
           <TabsContent value="dashboard" className="space-y-6">
             <VolunteerDashboard cases={cases} activities={activities} />
+          </TabsContent>
+
+          <TabsContent value="volunteers" className="space-y-6">
+            {selectedVolunteerId ? (
+              <div className="space-y-4">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setSelectedVolunteerId(null)}
+                  className="flex items-center gap-2"
+                >
+                  ← Back to Volunteers
+                </Button>
+                
+                {volunteers.find(v => v.id === selectedVolunteerId) && (
+                  <VolunteerProfile
+                    profile={volunteers.find(v => v.id === selectedVolunteerId)!}
+                    activities={activities.filter(a => a.volunteerId === selectedVolunteerId)}
+                    cases={cases}
+                    isOwnProfile={selectedVolunteerId === currentVolunteerId}
+                    onEditProfile={() => {
+                      // Edit handled by EditVolunteerProfile component
+                    }}
+                  />
+                )}
+              </div>
+            ) : (
+              <VolunteerDirectory
+                volunteers={volunteers}
+                onViewProfile={(volunteerId) => setSelectedVolunteerId(volunteerId)}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="report" className="space-y-6">
@@ -316,6 +375,47 @@ export default function App() {
                   Customize your experience and notification settings
                 </p>
               </div>
+              
+              {/* Profile Management */}
+              {volunteers.find(v => v.id === currentVolunteerId) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <UserCircle className="text-primary" />
+                      Your Profile
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium">Manage your volunteer profile</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Update your information, skills, and availability
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline"
+                          onClick={() => setSelectedVolunteerId(currentVolunteerId)}
+                        >
+                          View Profile
+                        </Button>
+                        <EditVolunteerProfile
+                          profile={volunteers.find(v => v.id === currentVolunteerId)!}
+                          onSave={(updatedProfile) => {
+                            setVolunteers(currentVolunteers => 
+                              currentVolunteers.map(v => 
+                                v.id === updatedProfile.id ? updatedProfile : v
+                              )
+                            )
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
               <VolunteerSettings />
             </div>
           </TabsContent>

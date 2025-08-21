@@ -65,6 +65,48 @@ export interface VolunteerActivity {
   timestamp: string;
   location?: Location;
   notes?: string;
+  duration?: number; // time spent helping in minutes
+  resourcesProvided?: string[]; // food, blankets, medical, etc.
+}
+
+export interface VolunteerProfile {
+  id: string;
+  name: string;
+  email?: string;
+  avatarUrl?: string;
+  joinedAt: string;
+  bio?: string;
+  skills: string[]; // medical training, translation, etc.
+  availableHours: {
+    days: string[]; // monday, tuesday, etc.
+    startTime: string;
+    endTime: string;
+  };
+  preferences: {
+    maxDistance: number;
+    preferredCategories: ('homeless' | 'animal')[];
+    notificationSettings: NotificationPreferences;
+  };
+  verification: {
+    isVerified: boolean;
+    verifiedAt?: string;
+    verificationMethod?: 'phone' | 'email' | 'government-id';
+  };
+  stats: VolunteerStats;
+}
+
+export interface VolunteerStats {
+  totalCasesHelped: number;
+  totalReports: number;
+  totalHoursVolunteered: number;
+  peopleHelped: number;
+  animalsHelped: number;
+  activeStreakDays: number;
+  averageResponseTime: number; // in minutes
+  mostActiveCategory: 'homeless' | 'animal' | null;
+  badges: Badge[];
+  rating: number; // 1-5 stars from community feedback
+  reviewCount: number;
 }
 
 export interface ImpactStats {
@@ -91,4 +133,24 @@ export interface CommunityStats {
     name: string;
     casesHelped: number;
   }>;
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  earnedAt: string;
+  category: 'milestone' | 'skill' | 'dedication' | 'impact';
+}
+
+export interface VolunteerReview {
+  id: string;
+  reviewerId: string;
+  volunteerId: string;
+  caseId: string;
+  rating: number; // 1-5 stars
+  comment?: string;
+  timestamp: string;
+  anonymous: boolean;
 }

@@ -20,22 +20,25 @@ import {
   Bell,
   Info,
   Phone,
-  Shield
+  Shield,
+  ChartBar
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { useKV } from '@github/spark/hooks'
-import { CaseReport } from '@/lib/types'
+import { CaseReport, VolunteerActivity } from '@/lib/types'
 import { ReportCase } from '@/components/ReportCase'
 import { CaseList } from '@/components/CaseList'
 import { VolunteerSettings } from '@/components/VolunteerSettings'
 import { QuickStartGuide } from '@/components/QuickStartGuide'
 import { VoiceControls } from '@/components/VoiceControls'
 import { DebugInfo } from '@/components/DebugInfo'
+import { VolunteerDashboard } from '@/components/VolunteerDashboard'
 import { sampleCases } from '@/lib/sampleData'
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('cases')
   const [cases, setCases] = useKV<CaseReport[]>('solidarity-cases', [])
+  const [activities, setActivities] = useKV<VolunteerActivity[]>('volunteer-activities', [])
   const [stats, setStats] = useState({
     total: 0,
     open: 0,
@@ -55,12 +58,40 @@ export default function App() {
   }, [cases])
 
   const handleCaseUpdate = (updatedCase: CaseReport) => {
+    // Create activity record for status changes
+    if (updatedCase.status === 'helped' || updatedCase.status === 'in-progress') {
+      const newActivity: VolunteerActivity = {
+        id: `activity-${Date.now()}`,
+        volunteerId: 'current-volunteer',
+        caseId: updatedCase.id,
+        action: updatedCase.status === 'helped' ? 'helped' : 'started-helping',
+        timestamp: new Date().toISOString(),
+        location: updatedCase.location,
+        notes: `${updatedCase.status === 'helped' ? 'Completed' : 'Started'} assistance for ${updatedCase.type} case`
+      }
+      
+      setActivities((currentActivities) => [...currentActivities, newActivity])
+    }
+    
     setCases((currentCases) => 
       currentCases.map(c => c.id === updatedCase.id ? updatedCase : c)
     )
   }
 
   const handleNewReport = (newReport: CaseReport) => {
+    // Create activity record for new reports
+    const newActivity: VolunteerActivity = {
+      id: `activity-${Date.now()}`,
+      volunteerId: 'current-volunteer',
+      caseId: newReport.id,
+      action: 'reported',
+      timestamp: new Date().toISOString(),
+      location: newReport.location,
+      notes: `Reported new ${newReport.type} case`
+    }
+    
+    setActivities((currentActivities) => [...currentActivities, newActivity])
+    
     // Case already added to storage in ReportCase component
     // Just need to trigger a re-render by updating local state
     setCases((currentCases) => [...currentCases])
@@ -68,6 +99,39 @@ export default function App() {
 
   const loadSampleData = () => {
     setCases(sampleCases)
+    
+    // Create sample activities
+    const sampleActivities: VolunteerActivity[] = [
+      {
+        id: 'sample-activity-1',
+        volunteerId: 'current-volunteer',
+        caseId: sampleCases[0]?.id || 'sample-1',
+        action: 'helped',
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        location: sampleCases[0]?.location || { lat: 40.7128, lng: -74.0060 },
+        notes: 'Provided food and blankets'
+      },
+      {
+        id: 'sample-activity-2',
+        volunteerId: 'current-volunteer',
+        caseId: sampleCases[1]?.id || 'sample-2',
+        action: 'started-helping',
+        timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+        location: sampleCases[1]?.location || { lat: 40.7589, lng: -73.9851 },
+        notes: 'Contacted local animal rescue'
+      },
+      {
+        id: 'sample-activity-3',
+        volunteerId: 'current-volunteer',
+        caseId: sampleCases[2]?.id || 'sample-3',
+        action: 'reported',
+        timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        location: sampleCases[2]?.location || { lat: 40.7505, lng: -73.9934 },
+        notes: 'Reported person needing assistance'
+      }
+    ]
+    
+    setActivities(sampleActivities)
     toast.success('Sample data loaded for demo purposes')
   }
 
@@ -139,10 +203,14 @@ export default function App() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Tab Navigation */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <TabsList className="grid w-full sm:w-auto grid-cols-3 sm:grid-cols-3">
+            <TabsList className="grid w-full sm:w-auto grid-cols-4 sm:grid-cols-4">
               <TabsTrigger value="cases" className="flex items-center gap-2">
                 <List size={16} />
                 <span className="hidden sm:inline">Cases</span>
+              </TabsTrigger>
+              <TabsTrigger value="dashboard" className="flex items-center gap-2">
+                <ChartBar size={16} />
+                <span className="hidden sm:inline">Dashboard</span>
               </TabsTrigger>
               <TabsTrigger value="report" className="flex items-center gap-2">
                 <Plus size={16} />
@@ -185,6 +253,10 @@ export default function App() {
               </div>
               <CaseList cases={cases} onCaseUpdate={handleCaseUpdate} />
             </div>
+          </TabsContent>
+
+          <TabsContent value="dashboard" className="space-y-6">
+            <VolunteerDashboard cases={cases} activities={activities} />
           </TabsContent>
 
           <TabsContent value="report" className="space-y-6">

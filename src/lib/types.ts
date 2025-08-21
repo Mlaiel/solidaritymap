@@ -56,3 +56,39 @@ export interface UserProfile {
     largeText: boolean;
   };
 }
+
+export interface VolunteerActivity {
+  id: string;
+  volunteerId: string;
+  caseId: string;
+  action: 'helped' | 'started-helping' | 'reported' | 'updated';
+  timestamp: string;
+  location?: Location;
+  notes?: string;
+}
+
+export interface ImpactStats {
+  totalCasesHelped: number;
+  totalReports: number;
+  peopleHelped: number;
+  animalsHelped: number;
+  activeStreak: number; // consecutive days with activity
+  averageResponseTime: number; // in minutes
+  mostActiveCategory: 'homeless' | 'animal' | null;
+  weeklyGoal: number;
+  weeklyProgress: number;
+}
+
+export interface CommunityStats {
+  totalVolunteers: number;
+  activeCases: number;
+  casesResolvedToday: number;
+  casesResolvedThisWeek: number;
+  casesResolvedThisMonth: number;
+  averageResolutionTime: number;
+  topVolunteers: Array<{
+    id: string;
+    name: string;
+    casesHelped: number;
+  }>;
+}

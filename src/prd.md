@@ -74,6 +74,11 @@
 - **Purpose**: Ensure reliability in areas with poor connectivity
 - **Success Criteria**: Full reporting functionality available offline
 
+### Volunteer Impact Dashboard
+- **Functionality**: Personal and community statistics tracking, goal setting, activity timeline
+- **Purpose**: Motivate continued volunteer engagement and show community impact
+- **Success Criteria**: Clear visualization of personal contribution and progress toward goals
+
 ## Design Direction
 
 ### Visual Tone & Identity

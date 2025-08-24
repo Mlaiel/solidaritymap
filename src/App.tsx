@@ -16,7 +16,7 @@ import {
   Users, 
   List, 
   Plus, 
-  Settings, 
+  Gear, 
   Bell,
   Info,
   Phone,
@@ -55,11 +55,12 @@ export default function App() {
 
   // Calculate statistics
   useEffect(() => {
+    const safeCases = cases || [];
     const newStats = {
-      total: cases.length,
-      open: cases.filter(c => c.status === 'open').length,
-      inProgress: cases.filter(c => c.status === 'in-progress').length,
-      helped: cases.filter(c => c.status === 'helped').length
+      total: safeCases.length,
+      open: safeCases.filter(c => c.status === 'open').length,
+      inProgress: safeCases.filter(c => c.status === 'in-progress').length,
+      helped: safeCases.filter(c => c.status === 'helped').length
     }
     setStats(newStats)
   }, [cases])
@@ -77,11 +78,11 @@ export default function App() {
         notes: `${updatedCase.status === 'helped' ? 'Completed' : 'Started'} assistance for ${updatedCase.type} case`
       }
       
-      setActivities((currentActivities) => [...currentActivities, newActivity])
+      setActivities((currentActivities) => [...(currentActivities || []), newActivity])
     }
     
     setCases((currentCases) => 
-      currentCases.map(c => c.id === updatedCase.id ? updatedCase : c)
+      (currentCases || []).map(c => c.id === updatedCase.id ? updatedCase : c)
     )
   }
 
@@ -97,11 +98,11 @@ export default function App() {
       notes: `Reported new ${newReport.type} case`
     }
     
-    setActivities((currentActivities) => [...currentActivities, newActivity])
+    setActivities((currentActivities) => [...(currentActivities || []), newActivity])
     
     // Case already added to storage in ReportCase component
     // Just need to trigger a re-render by updating local state
-    setCases((currentCases) => [...currentCases])
+    setCases((currentCases) => [...(currentCases || [])])
   }
 
   const loadSampleData = () => {
@@ -150,44 +151,125 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+      {/* Mobile-First Header */}
+      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 border-b border-border">
+        <div className="container max-w-7xl mx-auto px-3 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-12 h-12 bg-primary rounded-xl text-primary-foreground">
-                <Heart weight="fill" size={24} />
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-xl text-primary-foreground">
+                <Heart weight="fill" size={20} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">SolidarityMap-AI</h1>
-                <p className="text-sm text-muted-foreground">Community care platform</p>
+                <h1 className="text-lg sm:text-xl font-bold text-foreground">SolidarityMap</h1>
+                <p className="text-xs text-muted-foreground hidden sm:block">Community care platform</p>
               </div>
             </div>
             
-            {/* Stats */}
-            <div className="hidden lg:flex items-center gap-4">
-              <div className="text-center">
-                <div className="text-lg font-bold text-foreground">{stats.total}</div>
-                <div className="text-xs text-muted-foreground">Total cases</div>
+            {/* Mobile Stats */}
+            <div className="flex items-center gap-1 sm:gap-3">
+              <div className="text-center px-2 py-1 bg-muted rounded-lg">
+                <div className="text-sm font-bold text-foreground">{stats.total}</div>
+                <div className="text-xs text-muted-foreground">Cases</div>
               </div>
-              <Separator orientation="vertical" className="h-8" />
-              <div className="text-center">
-                <div className="text-lg font-bold text-accent">{stats.helped}</div>
+              <div className="text-center px-2 py-1 bg-accent/10 rounded-lg">
+                <div className="text-sm font-bold text-accent">{stats.helped}</div>
                 <div className="text-xs text-muted-foreground">Helped</div>
               </div>
-              <Separator orientation="vertical" className="h-8" />
-              <Badge variant={stats.open > 0 ? "destructive" : "secondary"} className="flex items-center gap-1">
-                <Bell size={14} />
-                {stats.open} need help
-              </Badge>
+              {stats.open > 0 && (
+                <Badge variant="destructive" className="flex items-center gap-1 text-xs px-2 py-1">
+                  <Bell size={12} />
+                  {stats.open}
+                </Badge>
+              )}
             </div>
+          </div>
+        </div>
+      </header>
 
-            {/* Voice Controls */}
-            <div className="hidden md:flex items-center gap-3">
+      {/* Mobile Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-t border-border md:hidden">
+        <div className="grid grid-cols-5 gap-1 px-2 py-2">
+          <Button
+            variant={activeTab === 'cases' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveTab('cases')}
+            className="flex flex-col items-center gap-1 h-auto py-2 px-1"
+          >
+            <List size={18} />
+            <span className="text-xs">Cases</span>
+          </Button>
+          <Button
+            variant={activeTab === 'dashboard' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveTab('dashboard')}
+            className="flex flex-col items-center gap-1 h-auto py-2 px-1"
+          >
+            <ChartBar size={18} />
+            <span className="text-xs">Stats</span>
+          </Button>
+          <Button
+            variant={activeTab === 'report' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveTab('report')}
+            className="flex flex-col items-center gap-1 h-auto py-2 px-1 bg-primary text-primary-foreground rounded-full"
+          >
+            <Plus size={20} />
+            <span className="text-xs">Report</span>
+          </Button>
+          <Button
+            variant={activeTab === 'volunteers' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveTab('volunteers')}
+            className="flex flex-col items-center gap-1 h-auto py-2 px-1"
+          >
+            <Users size={18} />
+            <span className="text-xs">People</span>
+          </Button>
+          <Button
+            variant={activeTab === 'settings' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveTab('settings')}
+            className="flex flex-col items-center gap-1 h-auto py-2 px-1"
+          >
+            <Gear size={18} />
+            <span className="text-xs">Settings</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <main className="container max-w-7xl mx-auto px-3 py-4 pb-20 md:pb-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          {/* Desktop Tab Navigation */}
+          <div className="hidden md:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <TabsList className="grid w-full sm:w-auto grid-cols-5">
+              <TabsTrigger value="cases" className="flex items-center gap-2">
+                <List size={16} />
+                Cases
+              </TabsTrigger>
+              <TabsTrigger value="dashboard" className="flex items-center gap-2">
+                <ChartBar size={16} />
+                Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="volunteers" className="flex items-center gap-2">
+                <Users size={16} />
+                Volunteers
+              </TabsTrigger>
+              <TabsTrigger value="report" className="flex items-center gap-2">
+                <Plus size={16} />
+                Report
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <Gear size={16} />
+                Settings
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Quick Actions */}
+            <div className="flex gap-2">
+              <QuickStartGuide />
               <VoiceControls />
-              
-              {/* Current User Profile */}
-              {volunteers.find(v => v.id === currentVolunteerId) && (
+              {(volunteers || []).find(v => v.id === currentVolunteerId) && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -198,63 +280,8 @@ export default function App() {
                   className="flex items-center gap-2"
                 >
                   <UserCircle size={20} />
-                  <span className="hidden lg:inline">My Profile</span>
+                  My Profile
                 </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Mobile Stats */}
-          <div className="md:hidden mt-4 grid grid-cols-3 gap-3">
-            <div className="text-center p-2 bg-muted rounded-lg">
-              <div className="font-bold text-foreground">{stats.total}</div>
-              <div className="text-xs text-muted-foreground">Total</div>
-            </div>
-            <div className="text-center p-2 bg-muted rounded-lg">
-              <div className="font-bold text-accent">{stats.helped}</div>
-              <div className="text-xs text-muted-foreground">Helped</div>
-            </div>
-            <div className="text-center p-2 bg-muted rounded-lg">
-              <div className="font-bold text-destructive">{stats.open}</div>
-              <div className="text-xs text-muted-foreground">Open</div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Tab Navigation */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <TabsList className="grid w-full sm:w-auto grid-cols-5 sm:grid-cols-5">
-              <TabsTrigger value="cases" className="flex items-center gap-2">
-                <List size={16} />
-                <span className="hidden sm:inline">Cases</span>
-              </TabsTrigger>
-              <TabsTrigger value="dashboard" className="flex items-center gap-2">
-                <ChartBar size={16} />
-                <span className="hidden sm:inline">Dashboard</span>
-              </TabsTrigger>
-              <TabsTrigger value="volunteers" className="flex items-center gap-2">
-                <Users size={16} />
-                <span className="hidden sm:inline">Volunteers</span>
-              </TabsTrigger>
-              <TabsTrigger value="report" className="flex items-center gap-2">
-                <Plus size={16} />
-                <span className="hidden sm:inline">Report</span>
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center gap-2">
-                <Settings size={16} />
-                <span className="hidden sm:inline">Settings</span>
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Quick Actions */}
-            <div className="flex gap-2">
-              <QuickStartGuide />
-              {activeTab === 'cases' && (
-                <ReportCase onReportSubmitted={handleNewReport} />
               )}
             </div>
           </div>
@@ -268,7 +295,7 @@ export default function App() {
                   <Badge variant="outline" className="text-xs">
                     Live updates
                   </Badge>
-                  {(cases.length === 0 || volunteers.length === 0) && (
+                  {((cases || []).length === 0 || (volunteers || []).length === 0) && (
                     <Button 
                       variant="outline" 
                       size="sm" 
@@ -279,12 +306,12 @@ export default function App() {
                   )}
                 </div>
               </div>
-              <CaseList cases={cases} onCaseUpdate={handleCaseUpdate} />
+              <CaseList cases={cases || []} onCaseUpdate={handleCaseUpdate} />
             </div>
           </TabsContent>
 
           <TabsContent value="dashboard" className="space-y-6">
-            <VolunteerDashboard cases={cases} activities={activities} />
+            <VolunteerDashboard cases={cases || []} activities={activities || []} />
           </TabsContent>
 
           <TabsContent value="volunteers" className="space-y-6">
@@ -298,11 +325,11 @@ export default function App() {
                   ← Back to Volunteers
                 </Button>
                 
-                {volunteers.find(v => v.id === selectedVolunteerId) && (
+                {(volunteers || []).find(v => v.id === selectedVolunteerId) && (
                   <VolunteerProfile
-                    profile={volunteers.find(v => v.id === selectedVolunteerId)!}
-                    activities={activities.filter(a => a.volunteerId === selectedVolunteerId)}
-                    cases={cases}
+                    profile={(volunteers || []).find(v => v.id === selectedVolunteerId)!}
+                    activities={(activities || []).filter(a => a.volunteerId === selectedVolunteerId)}
+                    cases={cases || []}
                     isOwnProfile={selectedVolunteerId === currentVolunteerId}
                     onEditProfile={() => {
                       // Edit handled by EditVolunteerProfile component
@@ -312,7 +339,7 @@ export default function App() {
               </div>
             ) : (
               <VolunteerDirectory
-                volunteers={volunteers}
+                volunteers={volunteers || []}
                 onViewProfile={(volunteerId) => setSelectedVolunteerId(volunteerId)}
               />
             )}
@@ -377,7 +404,7 @@ export default function App() {
               </div>
               
               {/* Profile Management */}
-              {volunteers.find(v => v.id === currentVolunteerId) && (
+              {(volunteers || []).find(v => v.id === currentVolunteerId) && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -401,10 +428,10 @@ export default function App() {
                           View Profile
                         </Button>
                         <EditVolunteerProfile
-                          profile={volunteers.find(v => v.id === currentVolunteerId)!}
+                          profile={(volunteers || []).find(v => v.id === currentVolunteerId)!}
                           onSave={(updatedProfile) => {
                             setVolunteers(currentVolunteers => 
-                              currentVolunteers.map(v => 
+                              (currentVolunteers || []).map(v => 
                                 v.id === updatedProfile.id ? updatedProfile : v
                               )
                             )
@@ -470,7 +497,7 @@ export default function App() {
             <div className="text-center text-xs text-muted-foreground">
               SolidarityMap-AI © 2024 - Building community through compassionate technology
             </div>
-            <DebugInfo cases={cases} onDataReset={() => setCases([])} />
+            <DebugInfo cases={cases || []} onDataReset={() => setCases([])} />
           </div>
         </div>
       </footer>

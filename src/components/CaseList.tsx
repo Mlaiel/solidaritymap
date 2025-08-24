@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, Heart, Paw, Clock, User, CheckCircle, AlertCircle } from '@phosphor-icons/react';
+import { MapPin, Heart, Dog, Clock, User, CheckCircle, Warning } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { CaseReport, Location } from '@/lib/types';
 import { formatTimeAgo, formatDistance, calculateDistance, useGeolocation } from '@/lib/geolocation';
@@ -59,7 +59,7 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
 
     // Update in persistent storage
     setStoredCases((currentCases) => 
-      currentCases.map(c => c.id === caseReport.id ? updatedCase : c)
+      (currentCases || []).map(c => c.id === caseReport.id ? updatedCase : c)
     );
     
     onCaseUpdate(updatedCase);
@@ -92,10 +92,10 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'open': return AlertCircle;
+      case 'open': return Warning;
       case 'in-progress': return Clock;
       case 'helped': return CheckCircle;
-      default: return AlertCircle;
+      default: return Warning;
     }
   };
 
@@ -107,7 +107,7 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
       <Dialog open={isDialogOpen && selectedCase?.id === caseReport.id} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
           <Card 
-            className="cursor-pointer hover:shadow-md transition-shadow border-l-4"
+            className="cursor-pointer hover:shadow-md transition-all duration-200 border-l-4 active:scale-[0.98]"
             style={{
               borderLeftColor: caseReport.urgency === 'high' ? 'hsl(var(--destructive))' : 
                                caseReport.urgency === 'medium' ? 'hsl(var(--primary))' : 
@@ -118,63 +118,76 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
               setIsDialogOpen(true);
             }}
           >
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
-                  {caseReport.type === 'homeless' ? (
-                    <Heart className="text-primary" size={18} />
-                  ) : (
-                    <Paw className="text-primary" size={18} />
-                  )}
-                  {caseReport.type === 'homeless' ? 'Person needs help' : 'Animal needs help'}
-                </CardTitle>
-                <div className="flex flex-col items-end gap-1">
-                  <Badge variant={getUrgencyColor(caseReport.urgency) as any} className="text-xs">
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="text-2xl">
+                    {caseReport.type === 'homeless' ? '👤' : '�'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-sm leading-tight">
+                      {caseReport.type === 'homeless' ? 'Person needs help' : 'Animal needs help'}
+                    </h3>
+                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                      {caseReport.description}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-end gap-1 ml-2">
+                  <Badge 
+                    variant={getUrgencyColor(caseReport.urgency) as any} 
+                    className="text-xs px-2 py-0.5 whitespace-nowrap"
+                  >
                     {caseReport.urgency}
                   </Badge>
-                  <Badge variant={getStatusColor(caseReport.status) as any} className="flex items-center gap-1 text-xs">
-                    <StatusIcon size={12} />
-                    {caseReport.status.replace('-', ' ')}
+                  <Badge 
+                    variant={getStatusColor(caseReport.status) as any} 
+                    className="flex items-center gap-1 text-xs px-2 py-0.5"
+                  >
+                    <StatusIcon size={10} />
+                    {caseReport.status === 'in-progress' ? 'helping' : caseReport.status}
                   </Badge>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                {caseReport.description}
-              </p>
               
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <MapPin size={12} />
-                  {distance ? formatDistance(distance) : 'Location'}
+                  <span>{distance ? formatDistance(distance) : 'Unknown location'}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock size={12} />
-                  {formatTimeAgo(caseReport.reportedAt)}
+                  <span>{formatTimeAgo(caseReport.reportedAt)}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
         </DialogTrigger>
 
-        {/* Case Detail Dialog */}
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {caseReport.type === 'homeless' ? (
-                <Heart className="text-primary" weight="fill" />
-              ) : (
-                <Paw className="text-primary" weight="fill" />
-              )}
-              {caseReport.type === 'homeless' ? 'Person Needs Help' : 'Animal Needs Help'}
+        {/* Mobile-Optimized Case Detail Dialog */}
+        <DialogContent className="max-w-[95vw] w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="text-left">
+            <DialogTitle className="flex items-center gap-3 text-lg">
+              <div className="text-2xl">
+                {caseReport.type === 'homeless' ? '👤' : '�'}
+              </div>
+              <div>
+                <div>{caseReport.type === 'homeless' ? 'Person Needs Help' : 'Animal Needs Help'}</div>
+                <div className="text-sm font-normal text-muted-foreground">
+                  Reported {formatTimeAgo(caseReport.reportedAt)}
+                </div>
+              </div>
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             {/* Status and Urgency */}
-            <div className="flex gap-2">
-              <Badge variant={getUrgencyColor(caseReport.urgency) as any}>
+            <div className="flex gap-2 flex-wrap">
+              <Badge variant={getUrgencyColor(caseReport.urgency) as any} className="flex items-center gap-1">
+                {caseReport.urgency === 'high' && '🔴'}
+                {caseReport.urgency === 'medium' && '🟡'}
+                {caseReport.urgency === 'low' && '🟢'}
                 {caseReport.urgency} urgency
               </Badge>
               <Badge variant={getStatusColor(caseReport.status) as any} className="flex items-center gap-1">
@@ -184,81 +197,79 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
             </div>
 
             {/* Description */}
-            <div>
-              <h4 className="font-medium mb-2">Situation</h4>
-              <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+            <div className="bg-muted/50 p-4 rounded-lg">
+              <h4 className="font-medium mb-2 text-sm">What's happening</h4>
+              <p className="text-sm leading-relaxed">
                 {caseReport.description}
               </p>
             </div>
 
-            {/* Location and Time */}
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <div className="flex items-center gap-1 text-muted-foreground mb-1">
-                  <MapPin size={14} />
-                  Distance
+            {/* Location and Time Info */}
+            <div className="grid grid-cols-1 gap-3 text-sm">
+              <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <MapPin size={16} className="text-muted-foreground" />
+                  <span className="font-medium">Distance</span>
                 </div>
-                <div className="font-medium">
+                <span className="text-muted-foreground">
                   {distance ? formatDistance(distance) : 'Unknown'}
-                </div>
+                </span>
               </div>
-              <div>
-                <div className="flex items-center gap-1 text-muted-foreground mb-1">
-                  <Clock size={14} />
-                  Reported
+              <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Clock size={16} className="text-muted-foreground" />
+                  <span className="font-medium">Reported</span>
                 </div>
-                <div className="font-medium">
+                <span className="text-muted-foreground">
                   {formatTimeAgo(caseReport.reportedAt)}
-                </div>
+                </span>
               </div>
             </div>
 
             {/* Action Buttons */}
             {caseReport.status === 'open' && (
-              <div className="space-y-2">
-                <Separator />
-                <div className="space-y-2">
-                  <Button 
-                    onClick={() => handleStatusUpdate(caseReport, 'in-progress')}
-                    className="w-full"
-                    variant="default"
-                  >
-                    <User className="mr-2" size={16} />
-                    I'm going to help
-                  </Button>
-                  <Button 
-                    onClick={() => handleStatusUpdate(caseReport, 'helped')}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    <CheckCircle className="mr-2" size={16} />
-                    Mark as helped
-                  </Button>
-                </div>
+              <div className="space-y-3 pt-2">
+                <Button 
+                  onClick={() => handleStatusUpdate(caseReport, 'in-progress')}
+                  className="w-full h-12 text-base"
+                  size="lg"
+                >
+                  <User className="mr-2" size={18} />
+                  I'm going to help
+                </Button>
+                <Button 
+                  onClick={() => handleStatusUpdate(caseReport, 'helped')}
+                  className="w-full h-12 text-base"
+                  variant="outline"
+                  size="lg"
+                >
+                  <CheckCircle className="mr-2" size={18} />
+                  Mark as already helped
+                </Button>
               </div>
             )}
 
             {caseReport.status === 'in-progress' && (
-              <div className="space-y-2">
-                <Separator />
+              <div className="pt-2">
                 <Button 
                   onClick={() => handleStatusUpdate(caseReport, 'helped')}
-                  className="w-full"
+                  className="w-full h-12 text-base"
+                  size="lg"
                 >
-                  <CheckCircle className="mr-2" size={16} />
+                  <CheckCircle className="mr-2" size={18} />
                   Mark as helped
                 </Button>
               </div>
             )}
 
             {caseReport.status === 'helped' && caseReport.helpedAt && (
-              <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
-                <div className="flex items-center gap-2 text-green-800">
-                  <CheckCircle className="text-green-600" size={16} />
-                  <span className="font-medium">Help provided</span>
+              <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                <div className="flex items-center gap-2 text-green-800 mb-1">
+                  <CheckCircle className="text-green-600" size={18} />
+                  <span className="font-medium">Help has been provided</span>
                 </div>
-                <p className="text-xs text-green-700 mt-1">
-                  Helped {formatTimeAgo(caseReport.helpedAt)}
+                <p className="text-sm text-green-700">
+                  Assistance completed {formatTimeAgo(caseReport.helpedAt)}
                 </p>
               </div>
             )}
@@ -269,46 +280,57 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="space-y-2">
+    <div className="space-y-4">
+      {/* Mobile-Optimized Filters */}
+      <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-4">
+        <div className="space-y-1">
           <label className="text-sm font-medium">Type</label>
           <Select value={filter} onValueChange={(value: 'all' | 'homeless' | 'animal') => setFilter(value)}>
-            <SelectTrigger className="w-full sm:w-40">
+            <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All cases</SelectItem>
-              <SelectItem value="homeless">People</SelectItem>
-              <SelectItem value="animal">Animals</SelectItem>
+              <SelectItem value="homeless">👤 People</SelectItem>
+              <SelectItem value="animal">🐾 Animals</SelectItem>
             </SelectContent>
           </Select>
         </div>
         
-        <div className="space-y-2">
+        <div className="space-y-1">
           <label className="text-sm font-medium">Status</label>
           <Select value={statusFilter} onValueChange={(value: 'all' | 'open' | 'in-progress' | 'helped') => setStatusFilter(value)}>
-            <SelectTrigger className="w-full sm:w-40">
+            <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All status</SelectItem>
-              <SelectItem value="open">Open</SelectItem>
-              <SelectItem value="in-progress">In progress</SelectItem>
-              <SelectItem value="helped">Helped</SelectItem>
+              <SelectItem value="open">🔴 Open</SelectItem>
+              <SelectItem value="in-progress">🟡 In progress</SelectItem>
+              <SelectItem value="helped">🟢 Helped</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {/* Cases Grid */}
+      {/* Summary Bar */}
+      {sortedCases.length > 0 && (
+        <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground">
+          Showing {sortedCases.length} case{sortedCases.length !== 1 ? 's' : ''} 
+          {filter !== 'all' && ` • ${filter === 'homeless' ? 'People' : 'Animals'} only`}
+          {statusFilter !== 'all' && ` • ${statusFilter.replace('-', ' ')} status`}
+        </div>
+      )}
+
+      {/* Cases List - Mobile Optimized */}
       {sortedCases.length === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Heart className="text-muted-foreground mb-4" size={48} />
-            <h3 className="font-medium text-lg mb-2">No cases found</h3>
-            <p className="text-muted-foreground text-center max-w-sm">
+          <CardContent className="flex flex-col items-center justify-center py-8 px-4">
+            <div className="text-4xl mb-3">
+              {filter === 'homeless' ? '👤' : filter === 'animal' ? '🐾' : '💝'}
+            </div>
+            <h3 className="font-medium text-base mb-2 text-center">No cases found</h3>
+            <p className="text-muted-foreground text-center text-sm max-w-sm">
               {filter === 'all' 
                 ? "There are currently no assistance requests in your area." 
                 : `No ${filter === 'homeless' ? 'people' : 'animals'} need help right now.`
@@ -317,7 +339,7 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="space-y-3">
           {sortedCases.map((caseReport) => (
             <CaseCard key={caseReport.id} case_={caseReport} />
           ))}

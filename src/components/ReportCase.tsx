@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Plus, MapPin, Camera, Heart, Paw } from '@phosphor-icons/react';
+import { Plus, MapPin, Camera, Heart, Dog } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { useGeolocation, formatDistance } from '@/lib/geolocation';
 import { CaseReport, Location } from '@/lib/types';
@@ -60,7 +60,7 @@ export function ReportCase({ onReportSubmitted }: ReportCaseProps) {
       };
 
       // Add to persistent storage
-      setCases((currentCases) => [...currentCases, newReport]);
+      setCases((currentCases) => [...(currentCases || []), newReport]);
       
       onReportSubmitted(newReport);
       
@@ -82,12 +82,13 @@ export function ReportCase({ onReportSubmitted }: ReportCaseProps) {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button 
-          size="lg" 
-          className="w-full md:w-auto bg-accent hover:bg-accent/90 text-accent-foreground font-medium"
+          size="default" 
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-3 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap"
           aria-label="Report someone who needs help"
         >
-          <Plus className="mr-2" weight="bold" />
-          Report Need
+          <Plus className="w-4 h-4" weight="bold" />
+          <span className="hidden sm:inline">Report Need</span>
+          <span className="sm:hidden">Report</span>
         </Button>
       </DialogTrigger>
       
@@ -145,7 +146,7 @@ export function ReportCase({ onReportSubmitted }: ReportCaseProps) {
                 </SelectItem>
                 <SelectItem value="animal">
                   <div className="flex items-center gap-2">
-                    <Paw size={16} />
+                    <Dog size={16} />
                     Stray or injured animal
                   </div>
                 </SelectItem>

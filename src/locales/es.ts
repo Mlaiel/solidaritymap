@@ -273,6 +273,8 @@ const es: Translations = {
     enableNotificationsAriaLabel: 'Habilitar notificaciones',
     readyToHelp: 'Listo para ayudar',
     notificationsDisabled: 'Notificaciones deshabilitadas',
+    volunteerPreferencesTitle: 'Preferencias de Voluntario',
+    volunteerPreferencesDesc: 'Personaliza tu experiencia y configuración de notificaciones',
   },
   
   footer: {

@@ -294,7 +294,9 @@ const en: Translations = {
     notificationSettingsDesc: 'You\'ll receive alerts for assistance requests within 5km of your location',
     enableNotificationsAriaLabel: 'Enable notifications',
     readyToHelp: 'Ready to help',
-    notificationsDisabled: 'Notifications disabled'
+    notificationsDisabled: 'Notifications disabled',
+    volunteerPreferencesTitle: 'Volunteer Preferences',
+    volunteerPreferencesDesc: 'Customize your experience and notification settings',
   },
   
   footer: {

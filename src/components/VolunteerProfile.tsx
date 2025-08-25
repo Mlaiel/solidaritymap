@@ -440,7 +440,7 @@ export function VolunteerProfile({
                 <div className="mt-6 space-y-4">
                   <Separator />
                   <div>
-                    <h4 className="font-medium mb-2">Volunteer Preferences</h4>
+                    <h4 className="font-medium mb-2">{t('settings.volunteerPreferencesTitle')}</h4>
                     <div className="space-y-2 text-sm text-muted-foreground">
                       <div className="flex justify-between">
                         <span>Max Distance</span>

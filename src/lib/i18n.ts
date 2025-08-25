@@ -261,6 +261,8 @@ export interface Translations {
     enableNotificationsAriaLabel: string;
     readyToHelp: string;
     notificationsDisabled: string;
+    volunteerPreferencesTitle: string;
+    volunteerPreferencesDesc: string;
   },
   
   // Directory

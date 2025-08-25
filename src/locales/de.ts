@@ -246,7 +246,9 @@ const de: Translations = {
     notificationSettingsDesc: 'Konfigurieren Sie, wann und wie Sie Benachrichtigungen erhalten',
     enableNotificationsAriaLabel: 'Benachrichtigungen ein- oder ausschalten',
     readyToHelp: 'Bereit zu helfen',
-    notificationsDisabled: 'Benachrichtigungen deaktiviert'
+    notificationsDisabled: 'Benachrichtigungen deaktiviert',
+    volunteerPreferencesTitle: 'Freiwilligeneinstellungen',
+    volunteerPreferencesDesc: 'Passen Sie Ihre Erfahrung und Benachrichtigungseinstellungen an',
   },
   directory: {
     title: 'Freiwilligen-Gemeinschaft',

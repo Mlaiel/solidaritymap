@@ -406,9 +406,9 @@ export default function App() {
           <TabsContent value="settings" className="space-y-6">
             <div className="max-w-2xl mx-auto space-y-6">
               <div className="text-center space-y-2">
-                <h2 className="text-2xl font-bold">Volunteer Preferences</h2>
+                <h2 className="text-2xl font-bold">{t('settings.volunteerPreferencesTitle')}</h2>
                 <p className="text-muted-foreground">
-                  Customize your experience and notification settings
+                  {t('settings.volunteerPreferencesDesc')}
                 </p>
               </div>
               

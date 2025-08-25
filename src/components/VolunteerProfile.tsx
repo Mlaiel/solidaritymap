@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useTranslation } from '@/hooks/useTranslation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
@@ -17,24 +18,24 @@ import {
   MapPin,
   Clock,
   Star,
-  Award,
+  Question as Award,
   TrendUp,
   Calendar,
   Users,
   Shield,
   Phone,
-  Mail,
-  Edit,
-  Settings,
+  Question as Mail,
+  Question as Edit,
+  Question as Settings,
   ChartBar,
   Activity,
   Target
 } from '@phosphor-icons/react'
-import { VolunteerProfile, VolunteerActivity, CaseReport, Badge as BadgeType } from '@/lib/types'
+import type { VolunteerProfile as VolunteerProfileType, VolunteerActivity, CaseReport, Badge as BadgeType } from '@/lib/types'
 import { ActivityTimeline } from '@/components/ActivityTimeline'
 
 interface VolunteerProfileProps {
-  profile: VolunteerProfile
+  profile: VolunteerProfileType
   activities: VolunteerActivity[]
   cases: CaseReport[]
   isOwnProfile: boolean
@@ -48,6 +49,7 @@ export function VolunteerProfile({
   isOwnProfile,
   onEditProfile 
 }: VolunteerProfileProps) {
+  const { t } = useTranslation()
   const [selectedTimeframe, setSelectedTimeframe] = useState<'week' | 'month' | 'year' | 'all'>('month')
 
   // Calculate recent activity stats
@@ -287,7 +289,6 @@ export function VolunteerProfile({
               <ActivityTimeline 
                 activities={filteredActivities.slice(0, 10)} 
                 cases={cases}
-                showLocation={true}
               />
               {filteredActivities.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
@@ -309,7 +310,7 @@ export function VolunteerProfile({
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>People Helped</span>
+                    <span>{t('profile.peopleHelped')}</span>
                     <span className="font-medium">{profile.stats.peopleHelped}</span>
                   </div>
                   <Progress 
@@ -320,7 +321,7 @@ export function VolunteerProfile({
                 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Animals Helped</span>
+                    <span>{t('profile.animalsHelped')}</span>
                     <span className="font-medium">{profile.stats.animalsHelped}</span>
                   </div>
                   <Progress 

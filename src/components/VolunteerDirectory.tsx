@@ -16,14 +16,15 @@ import {
   MapPin,
   Star,
   Shield,
-  Search,
-  Filter,
+  MagnifyingGlass,
+  Funnel,
   Users,
   Clock,
-  Award,
+  Medal,
   TrendUp
 } from '@phosphor-icons/react'
 import { VolunteerProfile } from '@/lib/types'
+import { useTranslation } from '@/hooks/useTranslation'
 
 interface VolunteerDirectoryProps {
   volunteers: VolunteerProfile[]
@@ -31,6 +32,7 @@ interface VolunteerDirectoryProps {
 }
 
 export function VolunteerDirectory({ volunteers, onViewProfile }: VolunteerDirectoryProps) {
+  const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'rating' | 'cases' | 'hours' | 'recent'>('rating')
   const [filterCategory, setFilterCategory] = useState<'all' | 'homeless' | 'animal'>('all')
@@ -90,15 +92,15 @@ export function VolunteerDirectory({ volunteers, onViewProfile }: VolunteerDirec
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Volunteer Community</h2>
+          <h2 className="text-2xl font-bold">{t('directory.title')}</h2>
           <p className="text-muted-foreground">
-            Connect with {volunteers.length} dedicated volunteers in your area
+            {t('directory.subtitle')} {volunteers.length} {t('directory.volunteers')}
           </p>
         </div>
         
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Users size={16} />
-          <span>{filteredAndSortedVolunteers.length} volunteers</span>
+          <span>{filteredAndSortedVolunteers.length} {t('directory.volunteers')}</span>
         </div>
       </div>
 
@@ -108,9 +110,9 @@ export function VolunteerDirectory({ volunteers, onViewProfile }: VolunteerDirec
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
+              <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
               <Input
-                placeholder="Search volunteers by name, skills, or bio..."
+                placeholder={t('directory.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -121,24 +123,24 @@ export function VolunteerDirectory({ volunteers, onViewProfile }: VolunteerDirec
             <div className="flex flex-wrap gap-2">
               <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
                 <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Sort by" />
+                  <SelectValue placeholder={t('directory.sortBy')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="rating">Rating</SelectItem>
-                  <SelectItem value="cases">Cases Helped</SelectItem>
-                  <SelectItem value="hours">Hours Volunteered</SelectItem>
-                  <SelectItem value="recent">Recently Joined</SelectItem>
+                  <SelectItem value="rating">{t('directory.sortByRating')}</SelectItem>
+                  <SelectItem value="cases">{t('directory.sortByCases')}</SelectItem>
+                  <SelectItem value="hours">{t('directory.sortByHours')}</SelectItem>
+                  <SelectItem value="recent">{t('directory.sortByRecent')}</SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value={filterCategory} onValueChange={(value: any) => setFilterCategory(value)}>
                 <SelectTrigger className="w-[120px]">
-                  <SelectValue placeholder="Category" />
+                  <SelectValue placeholder={t('directory.category')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="homeless">Homeless</SelectItem>
-                  <SelectItem value="animal">Animals</SelectItem>
+                  <SelectItem value="all">{t('directory.allCategories')}</SelectItem>
+                  <SelectItem value="homeless">{t('directory.homeless')}</SelectItem>
+                  <SelectItem value="animal">{t('directory.animals')}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -149,7 +151,7 @@ export function VolunteerDirectory({ volunteers, onViewProfile }: VolunteerDirec
                 className="flex items-center gap-2"
               >
                 <Shield size={16} />
-                Verified Only
+                {t('directory.verifiedOnly')}
               </Button>
             </div>
           </div>
@@ -211,22 +213,22 @@ export function VolunteerDirectory({ volunteers, onViewProfile }: VolunteerDirec
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div>
                     <div className="font-semibold text-primary">{volunteer.stats.totalCasesHelped}</div>
-                    <div className="text-xs text-muted-foreground">Cases</div>
+                    <div className="text-xs text-muted-foreground">{t('directory.cases')}</div>
                   </div>
                   <div>
                     <div className="font-semibold text-accent">{formatDuration(volunteer.stats.totalHoursVolunteered)}</div>
-                    <div className="text-xs text-muted-foreground">Hours</div>
+                    <div className="text-xs text-muted-foreground">{t('directory.hours')}</div>
                   </div>
                   <div>
                     <div className="font-semibold text-success">{volunteer.stats.activeStreakDays}</div>
-                    <div className="text-xs text-muted-foreground">Streak</div>
+                    <div className="text-xs text-muted-foreground">{t('directory.streak')}</div>
                   </div>
                 </div>
 
                 {/* Skills */}
                 {volunteer.skills.length > 0 && (
                   <div className="space-y-2">
-                    <div className="text-sm font-medium">Skills</div>
+                    <div className="text-sm font-medium">{t('directory.skills')}</div>
                     <div className="flex flex-wrap gap-1">
                       {volunteer.skills.slice(0, 3).map((skill) => (
                         <Badge key={skill} variant="secondary" className="text-xs">
@@ -235,7 +237,7 @@ export function VolunteerDirectory({ volunteers, onViewProfile }: VolunteerDirec
                       ))}
                       {volunteer.skills.length > 3 && (
                         <Badge variant="outline" className="text-xs">
-                          +{volunteer.skills.length - 3} more
+                          +{volunteer.skills.length - 3} {t('directory.more')}
                         </Badge>
                       )}
                     </div>
@@ -244,7 +246,7 @@ export function VolunteerDirectory({ volunteers, onViewProfile }: VolunteerDirec
 
                 {/* Categories */}
                 <div className="space-y-2">
-                  <div className="text-sm font-medium">Specializes in</div>
+                  <div className="text-sm font-medium">{t('directory.specializesIn')}</div>
                   <div className="flex gap-1">
                     {volunteer.preferences.preferredCategories.map((category) => (
                       <Badge key={category} variant="outline" className="text-xs capitalize">
@@ -271,7 +273,7 @@ export function VolunteerDirectory({ volunteers, onViewProfile }: VolunteerDirec
                   className="w-full"
                   size="sm"
                 >
-                  View Profile
+                  {t('directory.viewProfile')}
                 </Button>
               </CardContent>
             </Card>
@@ -283,9 +285,9 @@ export function VolunteerDirectory({ volunteers, onViewProfile }: VolunteerDirec
       {filteredAndSortedVolunteers.length === 0 && (
         <div className="text-center py-12">
           <Users size={48} className="mx-auto mb-4 text-muted-foreground opacity-50" />
-          <h3 className="text-lg font-semibold mb-2">No volunteers found</h3>
+          <h3 className="text-lg font-semibold mb-2">{t('directory.noVolunteersFound')}</h3>
           <p className="text-muted-foreground">
-            Try adjusting your search criteria or filters to find volunteers.
+            {t('directory.adjustFilters')}
           </p>
         </div>
       )}
@@ -295,7 +297,7 @@ export function VolunteerDirectory({ volunteers, onViewProfile }: VolunteerDirec
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendUp className="text-primary" />
-            Community Impact
+            {t('directory.communityImpact')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -304,28 +306,28 @@ export function VolunteerDirectory({ volunteers, onViewProfile }: VolunteerDirec
               <div className="text-2xl font-bold text-primary">
                 {volunteers.reduce((sum, v) => sum + v.stats.totalCasesHelped, 0)}
               </div>
-              <div className="text-sm text-muted-foreground">Total Cases Helped</div>
+              <div className="text-sm text-muted-foreground">{t('directory.totalCasesHelped')}</div>
             </div>
             
             <div>
               <div className="text-2xl font-bold text-accent">
                 {Math.round(volunteers.reduce((sum, v) => sum + v.stats.totalHoursVolunteered, 0))}h
               </div>
-              <div className="text-sm text-muted-foreground">Total Hours</div>
+              <div className="text-sm text-muted-foreground">{t('directory.totalHours')}</div>
             </div>
             
             <div>
               <div className="text-2xl font-bold text-success">
                 {volunteers.filter(v => v.verification.isVerified).length}
               </div>
-              <div className="text-sm text-muted-foreground">Verified Volunteers</div>
+              <div className="text-sm text-muted-foreground">{t('directory.verifiedVolunteers')}</div>
             </div>
             
             <div>
               <div className="text-2xl font-bold">
                 {(volunteers.reduce((sum, v) => sum + v.stats.rating, 0) / volunteers.length).toFixed(1)}
               </div>
-              <div className="text-sm text-muted-foreground">Avg Rating</div>
+              <div className="text-sm text-muted-foreground">{t('directory.avgRating')}</div>
             </div>
           </div>
         </CardContent>

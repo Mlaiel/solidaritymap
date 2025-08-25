@@ -17,7 +17,7 @@ import {
   MapPin, 
   Clock, 
   Target, 
-  Award,
+  Trophy,
   Users,
   Calendar,
   ChartBar,
@@ -29,6 +29,7 @@ import {
 import { useKV } from '@github/spark/hooks'
 import { CaseReport, VolunteerActivity, ImpactStats, CommunityStats } from '@/lib/types'
 import { calculateImpactStats, calculateCommunityStats } from '@/lib/statistics'
+import { useTranslation } from '@/hooks/useTranslation'
 import { ImpactChart } from '@/components/ImpactChart'
 import { ActivityTimeline } from '@/components/ActivityTimeline'
 import { DashboardGuide } from '@/components/DashboardGuide'
@@ -40,11 +41,13 @@ interface VolunteerDashboardProps {
 }
 
 export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProps) {
+  const { t } = useTranslation();
   const [storedActivities, setStoredActivities] = useKV<VolunteerActivity[]>('volunteer-activities', [])
   const [weeklyGoal, setWeeklyGoal] = useKV<number>('weekly-goal', 5)
   
   // Use passed activities or stored activities if available
-  const allActivities = activities.length > 0 ? activities : storedActivities
+  const allActivities = activities.length > 0 ? activities : (storedActivities || [])
+  const safeWeeklyGoal = weeklyGoal || 5
   const [impactStats, setImpactStats] = useState<ImpactStats>({
     totalCasesHelped: 0,
     totalReports: 0,
@@ -71,7 +74,7 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
     const calculatedStats = calculateImpactStats(cases, allActivities)
     const newStats: ImpactStats = {
       ...calculatedStats,
-      weeklyGoal,
+      weeklyGoal: safeWeeklyGoal,
       weeklyProgress: calculatedStats.weeklyProgress
     }
     setImpactStats(newStats)
@@ -98,15 +101,15 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
           <div>
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <ChartBar className="text-primary" />
-              Volunteer Dashboard
+              {t('dashboard.title')}
             </h2>
             <p className="text-muted-foreground">
-              Track your impact and community contributions
+              {t('dashboard.overview')}
             </p>
           </div>
           <Badge variant="secondary" className="flex items-center gap-1">
             <Fire className="text-accent" size={14} />
-            {impactStats.activeStreak} day streak
+            {impactStats.activeStreak} {t('dashboard.dayStreak')}
           </Badge>
         </div>
 
@@ -117,14 +120,14 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Target className="text-primary" size={20} />
-                  <span className="font-semibold">Weekly Goal Progress</span>
+                  <span className="font-semibold">{t('dashboard.weeklyGoalProgress')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => updateWeeklyGoal(weeklyGoal - 1)}
-                    disabled={weeklyGoal <= 1}
+                    onClick={() => updateWeeklyGoal(safeWeeklyGoal - 1)}
+                    disabled={safeWeeklyGoal <= 1}
                   >
                     -
                   </Button>
@@ -134,7 +137,7 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => updateWeeklyGoal(weeklyGoal + 1)}
+                    onClick={() => updateWeeklyGoal(safeWeeklyGoal + 1)}
                   >
                     +
                   </Button>
@@ -142,8 +145,8 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
               </div>
               <Progress value={progressPercentage} className="h-3" />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{impactStats.weeklyProgress} helped this week</span>
-                <span>{Math.max(0, impactStats.weeklyGoal - impactStats.weeklyProgress)} to go</span>
+                <span>{impactStats.weeklyProgress} {t('dashboard.helpedThisWeek')}</span>
+                <span>{Math.max(0, impactStats.weeklyGoal - impactStats.weeklyProgress)} {t('dashboard.toGo')}</span>
               </div>
             </div>
           </CardContent>
@@ -154,15 +157,15 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="impact" className="flex items-center gap-2">
             <TrendUp size={16} />
-            Impact
+            {t('dashboard.impact')}
           </TabsTrigger>
           <TabsTrigger value="activity" className="flex items-center gap-2">
             <Clock size={16} />
-            Activity
+            {t('dashboard.activity')}
           </TabsTrigger>
           <TabsTrigger value="community" className="flex items-center gap-2">
             <Globe size={16} />
-            Community
+            {t('dashboard.community')}
           </TabsTrigger>
         </TabsList>
 
@@ -178,7 +181,7 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-muted-foreground">Total Helped</p>
+                        <p className="text-sm text-muted-foreground">{t('dashboard.totalHelped')}</p>
                         <p className="text-2xl font-bold text-accent">{impactStats.totalCasesHelped}</p>
                       </div>
                       <Heart className="text-accent" size={24} />
@@ -190,7 +193,7 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-muted-foreground">People Helped</p>
+                        <p className="text-sm text-muted-foreground">{t('dashboard.peopleHelped')}</p>
                         <p className="text-2xl font-bold text-primary">{impactStats.peopleHelped}</p>
                       </div>
                       <Users className="text-primary" size={24} />
@@ -202,7 +205,7 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-muted-foreground">Animals Helped</p>
+                        <p className="text-sm text-muted-foreground">{t('dashboard.animalsHelped')}</p>
                         <p className="text-2xl font-bold text-orange-500">{impactStats.animalsHelped}</p>
                       </div>
                       <PawPrint className="text-orange-500" size={24} />
@@ -214,7 +217,7 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-muted-foreground">Avg Response</p>
+                        <p className="text-sm text-muted-foreground">{t('dashboard.avgResponse')}</p>
                         <p className="text-2xl font-bold text-green-600">{impactStats.averageResponseTime}m</p>
                       </div>
                       <Clock className="text-green-600" size={24} />
@@ -226,7 +229,7 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
               {/* Impact Chart */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Weekly Impact Trend</CardTitle>
+                  <CardTitle>{t('dashboard.weeklyImpactTrend')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ImpactChart cases={cases} />
@@ -236,14 +239,14 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
               {/* Category Breakdown */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Impact by Category</CardTitle>
+                  <CardTitle>{t('dashboard.impactByCategory')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Users className="text-primary" size={16} />
-                        <span className="text-sm">Homeless Assistance</span>
+                        <span className="text-sm">{t('dashboard.homelessAssistance')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-mono">{impactStats.peopleHelped}</span>
@@ -256,7 +259,7 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <PawPrint className="text-orange-500" size={16} />
-                        <span className="text-sm">Animal Care</span>
+                        <span className="text-sm">{t('dashboard.animalCare')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-mono">{impactStats.animalsHelped}</span>
@@ -270,8 +273,8 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
                   {impactStats.mostActiveCategory && (
                     <div className="mt-4 p-3 bg-muted rounded-lg">
                       <div className="flex items-center gap-2 text-sm">
-                        <Award className="text-accent" size={16} />
-                        <span>Most active in <strong>{impactStats.mostActiveCategory}</strong> assistance</span>
+                        <Trophy className="text-accent" size={16} />
+                        <span>{t('dashboard.mostActiveIn')} <strong>{impactStats.mostActiveCategory}</strong> {t('dashboard.assistance')}</span>
                       </div>
                     </div>
                   )}
@@ -294,7 +297,7 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Active Volunteers</p>
+                    <p className="text-sm text-muted-foreground">{t('dashboard.activeVolunteers')}</p>
                     <p className="text-2xl font-bold text-primary">{communityStats.totalVolunteers}</p>
                   </div>
                   <Users className="text-primary" size={24} />
@@ -306,7 +309,7 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Active Cases</p>
+                    <p className="text-sm text-muted-foreground">{t('dashboard.activeCases')}</p>
                     <p className="text-2xl font-bold text-destructive">{communityStats.activeCases}</p>
                   </div>
                   <MapPin className="text-destructive" size={24} />
@@ -318,7 +321,7 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Resolved Today</p>
+                    <p className="text-sm text-muted-foreground">{t('dashboard.resolvedToday')}</p>
                     <p className="text-2xl font-bold text-success">{communityStats.casesResolvedToday}</p>
                   </div>
                   <Calendar className="text-success" size={24} />
@@ -331,19 +334,19 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>This Week's Community Impact</CardTitle>
+                <CardTitle>{t('dashboard.thisWeekCommunityImpact')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Cases Resolved</span>
+                    <span>{t('dashboard.casesResolved')}</span>
                     <span className="font-mono">{communityStats.casesResolvedThisWeek}</span>
                   </div>
                   <Progress value={(communityStats.casesResolvedThisWeek / 50) * 100} />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Average Resolution Time</span>
+                    <span>{t('dashboard.averageResolutionTime')}</span>
                     <span className="font-mono">{Math.round(communityStats.averageResolutionTime / 60)}h {communityStats.averageResolutionTime % 60}m</span>
                   </div>
                 </div>
@@ -352,7 +355,7 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
 
             <Card>
               <CardHeader>
-                <CardTitle>Top Community Helpers</CardTitle>
+                <CardTitle>{t('dashboard.topCommunityHelpers')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -368,7 +371,7 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
                           {index + 1}
                         </div>
                         <span className="text-sm font-medium">{volunteer.name}</span>
-                        {index === 0 && <Badge variant="secondary" className="text-xs">You</Badge>}
+                        {index === 0 && <Badge variant="secondary" className="text-xs">{t('dashboard.you')}</Badge>}
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-mono">{volunteer.casesHelped}</span>
@@ -384,21 +387,21 @@ export function VolunteerDashboard({ cases, activities }: VolunteerDashboardProp
           {/* Monthly Overview */}
           <Card>
             <CardHeader>
-              <CardTitle>Monthly Community Overview</CardTitle>
+              <CardTitle>{t('dashboard.monthlyCommunityOverview')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-accent mb-2">{communityStats.casesResolvedThisMonth}</div>
-                  <div className="text-sm text-muted-foreground">Cases Resolved This Month</div>
+                  <div className="text-sm text-muted-foreground">{t('dashboard.casesResolvedThisMonth')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-primary mb-2">{Math.round(communityStats.casesResolvedThisMonth / 30 * 7)}</div>
-                  <div className="text-sm text-muted-foreground">Weekly Average</div>
+                  <div className="text-sm text-muted-foreground">{t('dashboard.weeklyAverage')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-success mb-2">98%</div>
-                  <div className="text-sm text-muted-foreground">Success Rate</div>
+                  <div className="text-sm text-muted-foreground">{t('dashboard.successRate')}</div>
                 </div>
               </div>
             </CardContent>

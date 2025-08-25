@@ -30,11 +30,12 @@ import {
   Plus,
   X,
   Camera,
-  Save,
-  Settings
+  FloppyDisk,
+  Gear
 } from '@phosphor-icons/react'
 import { VolunteerProfile } from '@/lib/types'
 import { toast } from 'sonner'
+import { useTranslation } from '@/hooks/useTranslation'
 
 interface EditVolunteerProfileProps {
   profile: VolunteerProfile
@@ -43,6 +44,7 @@ interface EditVolunteerProfileProps {
 }
 
 export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteerProfileProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false)
   const [formData, setFormData] = useState({
     name: profile.name,
@@ -89,7 +91,7 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
 
     onSave(updatedProfile)
     setOpen(false)
-    toast.success('Profile updated successfully!')
+    toast.success(t('profile.profileUpdatedSuccess'))
   }
 
   const addSkill = () => {
@@ -134,8 +136,8 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
       <DialogTrigger asChild>
         {trigger || (
           <Button variant="outline">
-            <Settings size={16} className="mr-2" />
-            Edit Profile
+            <Gear size={16} className="mr-2" />
+            {t('profile.editProfile')}
           </Button>
         )}
       </DialogTrigger>
@@ -144,7 +146,7 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="text-primary" />
-            Edit Volunteer Profile
+            {t('profile.editVolunteerProfile')}
           </DialogTitle>
         </DialogHeader>
 
@@ -152,7 +154,7 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Basic Information</CardTitle>
+              <CardTitle className="text-lg">{t('profile.basicInformation')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Avatar */}
@@ -166,33 +168,33 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
                 <div className="space-y-2">
                   <Button variant="outline" size="sm">
                     <Camera size={16} className="mr-2" />
-                    Change Photo
+                    {t('profile.changePhoto')}
                   </Button>
                   <p className="text-xs text-muted-foreground">
-                    JPG, PNG or GIF (max 2MB)
+                    {t('profile.photoFormat')}
                   </p>
                 </div>
               </div>
 
               {/* Name */}
               <div className="space-y-2">
-                <Label htmlFor="name">Display Name</Label>
+                <Label htmlFor="name">{t('profile.displayName')}</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Your display name"
+                  placeholder={t('profile.displayNamePlaceholder')}
                 />
               </div>
 
               {/* Bio */}
               <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
+                <Label htmlFor="bio">{t('profile.bio')}</Label>
                 <Textarea
                   id="bio"
                   value={formData.bio}
                   onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                  placeholder="Tell others about yourself and your volunteer motivation..."
+                  placeholder={t('profile.bioPlaceholder')}
                   rows={3}
                 />
               </div>
@@ -202,16 +204,16 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
           {/* Skills & Expertise */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Skills & Expertise</CardTitle>
+              <CardTitle className="text-lg">{t('profile.skillsExpertise')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Skills</Label>
+                <Label>{t('profile.skills')}</Label>
                 <div className="flex gap-2">
                   <Input
                     value={newSkill}
                     onChange={(e) => setNewSkill(e.target.value)}
-                    placeholder="Add a skill..."
+                    placeholder={t('profile.addSkillPlaceholder')}
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
                   />
                   <Button onClick={addSkill} size="sm">
@@ -243,13 +245,13 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <MapPin className="text-primary" />
-                Volunteer Preferences
+                {t('profile.volunteerPreferences')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Max Distance */}
               <div className="space-y-2">
-                <Label htmlFor="maxDistance">Maximum Travel Distance (km)</Label>
+                <Label htmlFor="maxDistance">{t('profile.maxTravelDistance')}</Label>
                 <Input
                   id="maxDistance"
                   type="number"
@@ -265,21 +267,21 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
 
               {/* Preferred Categories */}
               <div className="space-y-2">
-                <Label>Preferred Categories</Label>
+                <Label>{t('profile.preferredCategories')}</Label>
                 <div className="flex gap-2">
                   <Button
                     variant={formData.preferredCategories.includes('homeless') ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => toggleCategory('homeless')}
                   >
-                    Homeless Assistance
+                    {t('profile.homelessAssistance')}
                   </Button>
                   <Button
                     variant={formData.preferredCategories.includes('animal') ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => toggleCategory('animal')}
                   >
-                    Animal Care
+                    {t('profile.animalCare')}
                   </Button>
                 </div>
               </div>
@@ -291,13 +293,13 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Clock className="text-primary" />
-                Availability
+                {t('profile.availability')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Available Days */}
               <div className="space-y-2">
-                <Label>Available Days</Label>
+                <Label>{t('profile.availableDays')}</Label>
                 <div className="flex flex-wrap gap-2">
                   {weekDays.map((day) => (
                     <Button
@@ -307,7 +309,7 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
                       onClick={() => toggleDay(day)}
                       className="capitalize"
                     >
-                      {day.slice(0, 3)}
+                      {t(`profile.weekdays.${day}` as any).slice(0, 3)}
                     </Button>
                   ))}
                 </div>
@@ -316,7 +318,7 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
               {/* Time Range */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="startTime">Start Time</Label>
+                  <Label htmlFor="startTime">{t('profile.startTime')}</Label>
                   <Input
                     id="startTime"
                     type="time"
@@ -325,7 +327,7 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="endTime">End Time</Label>
+                  <Label htmlFor="endTime">{t('profile.endTime')}</Label>
                   <Input
                     id="endTime"
                     type="time"
@@ -342,16 +344,16 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Bell className="text-primary" />
-                Notification Settings
+                {t('profile.notificationSettings')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Enable Notifications */}
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <Label>Enable Notifications</Label>
+                  <Label>{t('profile.enableNotifications')}</Label>
                   <p className="text-sm text-muted-foreground">
-                    Receive alerts about nearby cases that need help
+                    {t('profile.enableNotificationsDesc')}
                   </p>
                 </div>
                 <Switch
@@ -369,9 +371,9 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <Label>Quiet Hours</Label>
+                    <Label>{t('profile.quietHours')}</Label>
                     <p className="text-sm text-muted-foreground">
-                      Disable notifications during these hours
+                      {t('profile.quietHoursDesc')}
                     </p>
                   </div>
                   <Switch
@@ -386,7 +388,7 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
                 {formData.quietHoursEnabled && (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="quietStart">Start Time</Label>
+                      <Label htmlFor="quietStart">{t('profile.startTime')}</Label>
                       <Input
                         id="quietStart"
                         type="time"
@@ -398,7 +400,7 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="quietEnd">End Time</Label>
+                      <Label htmlFor="quietEnd">{t('profile.endTime')}</Label>
                       <Input
                         id="quietEnd"
                         type="time"
@@ -418,11 +420,11 @@ export function EditVolunteerProfile({ profile, onSave, trigger }: EditVolunteer
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-4">
             <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancel
+              {t('profile.cancel')}
             </Button>
             <Button onClick={handleSave}>
-              <Save size={16} className="mr-2" />
-              Save Changes
+              <FloppyDisk size={16} className="mr-2" />
+              {t('profile.saveChanges')}
             </Button>
           </div>
         </div>

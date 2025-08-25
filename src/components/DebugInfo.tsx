@@ -11,13 +11,14 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
+import { useTranslation } from '@/hooks/useTranslation';
 import { 
   Code, 
   Trash, 
   Download, 
-  AlertTriangle,
+  Warning,
   CheckCircle,
-  Settings,
+  Gear,
   Database
 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
@@ -30,25 +31,29 @@ interface DebugInfoProps {
 }
 
 export function DebugInfo({ cases, onDataReset }: DebugInfoProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [storedCases, setStoredCases] = useKV<CaseReport[]>('solidarity-cases', []);
-  const [notifications, setNotifications] = useKV('volunteer-notifications', {});
-  const [accessibility, setAccessibility] = useKV('accessibility-settings', {});
+  const [notifications, setNotifications] = useKV('volunteer-notifications', '{}');
+  const [accessibility, setAccessibility] = useKV('accessibility-settings', '{}');
 
   const clearAllData = () => {
     setStoredCases([]);
-    setNotifications({});
-    setAccessibility({});
+    setNotifications('{}');
+    setAccessibility('{}');
     onDataReset();
-    toast.success('All application data cleared');
+    toast.success(t('debug.dataCleared'));
     setIsOpen(false);
   };
 
   const exportData = () => {
+    const notificationData = JSON.parse(notifications || '{}');
+    const accessibilityData = JSON.parse(accessibility || '{}');
+    
     const data = {
       cases: storedCases,
-      notifications,
-      accessibility,
+      notifications: notificationData,
+      accessibility: accessibilityData,
       exportedAt: new Date().toISOString(),
       version: '1.0.0'
     };
@@ -63,42 +68,42 @@ export function DebugInfo({ cases, onDataReset }: DebugInfoProps) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    toast.success('Data exported successfully');
+    toast.success(t('debug.dataExported'));
   };
 
   const dataStats = {
-    totalCases: storedCases.length,
-    openCases: storedCases.filter(c => c.status === 'open').length,
-    helpedCases: storedCases.filter(c => c.status === 'helped').length,
-    hasNotificationSettings: Object.keys(notifications).length > 0,
-    hasAccessibilitySettings: Object.keys(accessibility).length > 0
+    totalCases: storedCases?.length || 0,
+    openCases: storedCases?.filter(c => c.status === 'open').length || 0,
+    helpedCases: storedCases?.filter(c => c.status === 'helped').length || 0,
+    hasNotificationSettings: Object.keys(JSON.parse(notifications || '{}')).length > 0,
+    hasAccessibilitySettings: Object.keys(JSON.parse(accessibility || '{}')).length > 0
   };
 
   const systemChecks = [
     {
-      name: 'Geolocation',
+      name: t('debug.geolocation'),
       status: 'geolocation' in navigator,
-      description: 'GPS location services'
+      description: t('debug.geolocationDesc')
     },
     {
-      name: 'Notifications',
+      name: t('debug.notifications'),
       status: 'Notification' in window,
-      description: 'Browser notifications'
+      description: t('debug.notificationsDesc')
     },
     {
-      name: 'Speech Recognition',
+      name: t('debug.speechRecognition'),
       status: 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window,
-      description: 'Voice input support'
+      description: t('debug.speechRecognitionDesc')
     },
     {
-      name: 'Speech Synthesis',
+      name: t('debug.speechSynthesis'),
       status: 'speechSynthesis' in window,
-      description: 'Text-to-speech support'
+      description: t('debug.speechSynthesisDesc')
     },
     {
-      name: 'Local Storage',
+      name: t('debug.localStorage'),
       status: typeof Storage !== 'undefined',
-      description: 'Data persistence'
+      description: t('debug.localStorageDesc')
     }
   ];
 
@@ -113,36 +118,34 @@ export function DebugInfo({ cases, onDataReset }: DebugInfoProps) {
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Settings className="text-primary" />
-            Debug Information
+            <Code size={20} />
+            {t('debug.title')}
           </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-6">
+        </DialogHeader>        <div className="space-y-6">
           {/* Data Statistics */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Database className="text-primary" />
-                Data Statistics
+                {t('debug.dataStatistics')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <div className="font-medium">Total Cases</div>
+                  <div className="font-medium">{t('debug.totalCases')}</div>
                   <div className="text-muted-foreground">{dataStats.totalCases}</div>
                 </div>
                 <div>
-                  <div className="font-medium">Open Cases</div>
+                  <div className="font-medium">{t('debug.openCases')}</div>
                   <div className="text-muted-foreground">{dataStats.openCases}</div>
                 </div>
                 <div>
-                  <div className="font-medium">Helped Cases</div>
+                  <div className="font-medium">{t('debug.helpedCases')}</div>
                   <div className="text-muted-foreground">{dataStats.helpedCases}</div>
                 </div>
                 <div>
-                  <div className="font-medium">Settings Configured</div>
+                  <div className="font-medium">{t('debug.settingsConfigured')}</div>
                   <div className="text-muted-foreground">
                     {(dataStats.hasNotificationSettings ? 1 : 0) + (dataStats.hasAccessibilitySettings ? 1 : 0)}/2
                   </div>
@@ -163,7 +166,7 @@ export function DebugInfo({ cases, onDataReset }: DebugInfoProps) {
                     {check.status ? (
                       <CheckCircle className="text-green-600" size={16} />
                     ) : (
-                      <AlertTriangle className="text-red-600" size={16} />
+                      <Warning className="text-red-600" size={16} />
                     )}
                     <div>
                       <div className="font-medium text-sm">{check.name}</div>
@@ -171,7 +174,7 @@ export function DebugInfo({ cases, onDataReset }: DebugInfoProps) {
                     </div>
                   </div>
                   <Badge variant={check.status ? "default" : "destructive"} className="text-xs">
-                    {check.status ? 'Supported' : 'Not Available'}
+                    {check.status ? t('debug.supported') : t('debug.notAvailable')}
                   </Badge>
                 </div>
               ))}
@@ -181,7 +184,7 @@ export function DebugInfo({ cases, onDataReset }: DebugInfoProps) {
           {/* Data Management */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Data Management</CardTitle>
+              <CardTitle className="text-base">{t('debug.dataManagement')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -191,7 +194,7 @@ export function DebugInfo({ cases, onDataReset }: DebugInfoProps) {
                   className="flex items-center gap-2"
                 >
                   <Download size={16} />
-                  Export Data
+                  {t('debug.exportData')}
                 </Button>
                 
                 <Button 
@@ -200,14 +203,14 @@ export function DebugInfo({ cases, onDataReset }: DebugInfoProps) {
                   className="flex items-center gap-2"
                 >
                   <Trash size={16} />
-                  Clear All Data
+                  {t('debug.clearAllData')}
                 </Button>
               </div>
               
               <Alert>
-                <AlertTriangle className="h-4 w-4" />
+                <Warning className="h-4 w-4" />
                 <AlertDescription className="text-sm">
-                  Clearing data will remove all cases, settings, and preferences. This action cannot be undone.
+                  {t('debug.clearDataWarning')}
                 </AlertDescription>
               </Alert>
             </CardContent>
@@ -216,19 +219,19 @@ export function DebugInfo({ cases, onDataReset }: DebugInfoProps) {
           {/* Build Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Build Information</CardTitle>
+              <CardTitle className="text-base">{t('debug.buildInformation')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="grid grid-cols-2 gap-2">
-                <div className="font-medium">Version:</div>
+                <div className="font-medium">{t('debug.version')}:</div>
                 <div className="text-muted-foreground">1.0.0</div>
                 
-                <div className="font-medium">Environment:</div>
+                <div className="font-medium">{t('debug.environment')}:</div>
                 <div className="text-muted-foreground">
                   {process.env.NODE_ENV || 'production'}
                 </div>
                 
-                <div className="font-medium">User Agent:</div>
+                <div className="font-medium">{t('debug.userAgent')}:</div>
                 <div className="text-muted-foreground text-xs break-all">
                   {navigator.userAgent}
                 </div>

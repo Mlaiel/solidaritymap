@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { MapPin, Heart, Dog, Clock, User, CheckCircle, Warning } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { CaseReport, Location } from '@/lib/types';
+import { useTranslation } from '@/hooks/useTranslation';
 import { formatTimeAgo, formatDistance, calculateDistance, useGeolocation } from '@/lib/geolocation';
 import { useKV } from '@github/spark/hooks';
 
@@ -23,6 +24,7 @@ interface CaseListProps {
 }
 
 export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState<'all' | 'homeless' | 'animal'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'in-progress' | 'helped'>('all');
   const [selectedCase, setSelectedCase] = useState<CaseReport | null>(null);
@@ -54,7 +56,7 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
       ...caseReport,
       status: newStatus,
       helpedAt: newStatus === 'helped' ? new Date().toISOString() : caseReport.helpedAt,
-      helpedBy: newStatus === 'helped' ? 'Anonymous Volunteer' : caseReport.helpedBy
+      helpedBy: newStatus === 'helped' ? t('cases.anonymousVolunteer') : caseReport.helpedBy
     };
 
     // Update in persistent storage
@@ -67,8 +69,8 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
     
     toast.success(
       newStatus === 'helped' 
-        ? 'Marked as helped! Thank you for making a difference.' 
-        : 'Marked as in progress. Let the community know you\'re on it!'
+        ? t('cases.markedAsHelped')
+        : t('cases.markedAsInProgress')
     );
   };
 
@@ -126,7 +128,7 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-sm leading-tight">
-                      {caseReport.type === 'homeless' ? 'Person needs help' : 'Animal needs help'}
+                      {caseReport.type === 'homeless' ? t('cases.personNeedsHelp') : t('cases.animalNeedsHelp')}
                     </h3>
                     <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
                       {caseReport.description}
@@ -154,7 +156,7 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <MapPin size={12} />
-                  <span>{distance ? formatDistance(distance) : 'Unknown location'}</span>
+                  <span>{distance ? formatDistance(distance) : t('cases.unknown')}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock size={12} />
@@ -173,9 +175,9 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
                 {caseReport.type === 'homeless' ? '👤' : '�'}
               </div>
               <div>
-                <div>{caseReport.type === 'homeless' ? 'Person Needs Help' : 'Animal Needs Help'}</div>
+                <div>{caseReport.type === 'homeless' ? t('cases.personNeedsHelp') : t('cases.animalNeedsHelp')}</div>
                 <div className="text-sm font-normal text-muted-foreground">
-                  Reported {formatTimeAgo(caseReport.reportedAt)}
+                  {t('cases.reported')} {formatTimeAgo(caseReport.reportedAt)}
                 </div>
               </div>
             </DialogTitle>
@@ -198,7 +200,7 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
 
             {/* Description */}
             <div className="bg-muted/50 p-4 rounded-lg">
-              <h4 className="font-medium mb-2 text-sm">What's happening</h4>
+              <h4 className="font-medium mb-2 text-sm">{t('cases.whatHappening')}</h4>
               <p className="text-sm leading-relaxed">
                 {caseReport.description}
               </p>
@@ -209,16 +211,16 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
               <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                 <div className="flex items-center gap-2">
                   <MapPin size={16} className="text-muted-foreground" />
-                  <span className="font-medium">Distance</span>
+                  <span className="font-medium">{t('cases.distance')}</span>
                 </div>
                 <span className="text-muted-foreground">
-                  {distance ? formatDistance(distance) : 'Unknown'}
+                  {distance ? formatDistance(distance) : t('cases.unknown')}
                 </span>
               </div>
               <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                 <div className="flex items-center gap-2">
                   <Clock size={16} className="text-muted-foreground" />
-                  <span className="font-medium">Reported</span>
+                  <span className="font-medium">{t('cases.reported')}</span>
                 </div>
                 <span className="text-muted-foreground">
                   {formatTimeAgo(caseReport.reportedAt)}
@@ -290,24 +292,24 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All cases</SelectItem>
-              <SelectItem value="homeless">👤 People</SelectItem>
-              <SelectItem value="animal">🐾 Animals</SelectItem>
+              <SelectItem value="all">{t('cases.allCases')}</SelectItem>
+              <SelectItem value="homeless">👤 {t('cases.people')}</SelectItem>
+              <SelectItem value="animal">🐾 {t('cases.animals')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         
         <div className="space-y-1">
-          <label className="text-sm font-medium">Status</label>
+          <label className="text-sm font-medium">{t('cases.statusLabel')}</label>
           <Select value={statusFilter} onValueChange={(value: 'all' | 'open' | 'in-progress' | 'helped') => setStatusFilter(value)}>
             <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All status</SelectItem>
-              <SelectItem value="open">🔴 Open</SelectItem>
-              <SelectItem value="in-progress">🟡 In progress</SelectItem>
-              <SelectItem value="helped">🟢 Helped</SelectItem>
+              <SelectItem value="all">{t('cases.allStatus')}</SelectItem>
+              <SelectItem value="open">🔴 {t('cases.status.open')}</SelectItem>
+              <SelectItem value="in-progress">🟡 {t('cases.inProgress')}</SelectItem>
+              <SelectItem value="helped">🟢 {t('cases.status.helped')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -316,8 +318,8 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
       {/* Summary Bar */}
       {sortedCases.length > 0 && (
         <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground">
-          Showing {sortedCases.length} case{sortedCases.length !== 1 ? 's' : ''} 
-          {filter !== 'all' && ` • ${filter === 'homeless' ? 'People' : 'Animals'} only`}
+          {t('cases.showing')} {sortedCases.length} {sortedCases.length !== 1 ? t('cases.cases') : t('cases.case')} 
+          {filter !== 'all' && ` • ${filter === 'homeless' ? t('cases.people') : t('cases.animals')} ${t('cases.only')}`}
           {statusFilter !== 'all' && ` • ${statusFilter.replace('-', ' ')} status`}
         </div>
       )}
@@ -329,11 +331,11 @@ export function CaseList({ cases, onCaseUpdate }: CaseListProps) {
             <div className="text-4xl mb-3">
               {filter === 'homeless' ? '👤' : filter === 'animal' ? '🐾' : '💝'}
             </div>
-            <h3 className="font-medium text-base mb-2 text-center">No cases found</h3>
+            <h3 className="font-medium text-base mb-2 text-center">{t('cases.noCasesFound')}</h3>
             <p className="text-muted-foreground text-center text-sm max-w-sm">
               {filter === 'all' 
-                ? "There are currently no assistance requests in your area." 
-                : `No ${filter === 'homeless' ? 'people' : 'animals'} need help right now.`
+                ? t('cases.noResultsDesc')
+                : `${t('cases.noResults')} ${filter === 'homeless' ? t('cases.people') : t('cases.animals')}`
               }
             </p>
           </CardContent>

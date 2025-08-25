@@ -19,12 +19,14 @@ import { useGeolocation, formatDistance } from '@/lib/geolocation';
 import { CaseReport, Location } from '@/lib/types';
 import { useKV } from '@github/spark/hooks';
 import { VoiceControls } from './VoiceControls';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ReportCaseProps {
   onReportSubmitted: (report: CaseReport) => void;
 }
 
 export function ReportCase({ onReportSubmitted }: ReportCaseProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [type, setType] = useState<'homeless' | 'animal'>('homeless');
   const [description, setDescription] = useState('');
@@ -36,7 +38,7 @@ export function ReportCase({ onReportSubmitted }: ReportCaseProps) {
 
   const handleSubmit = async () => {
     if (!description.trim()) {
-      toast.error('Please describe the situation');
+      toast.error(t('report.placeholders.person'));
       return;
     }
 
@@ -69,9 +71,9 @@ export function ReportCase({ onReportSubmitted }: ReportCaseProps) {
       setUrgency('medium');
       setIsOpen(false);
       
-      toast.success(`${type === 'homeless' ? 'Person' : 'Animal'} assistance request submitted`);
+      toast.success(t(type === 'homeless' ? 'report.success.person' : 'report.success.animal'));
     } catch (err) {
-      toast.error('Failed to submit report. Please try again.');
+      toast.error(t('common.error'));
       console.error('Report submission error:', err);
     } finally {
       setIsSubmitting(false);
@@ -84,11 +86,11 @@ export function ReportCase({ onReportSubmitted }: ReportCaseProps) {
         <Button 
           size="default" 
           className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-3 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap"
-          aria-label="Report someone who needs help"
+          aria-label={t('report.title')}
         >
           <Plus className="w-4 h-4" weight="bold" />
-          <span className="hidden sm:inline">Report Need</span>
-          <span className="sm:hidden">Report</span>
+          <span className="hidden sm:inline">{t('report.buttonText')}</span>
+          <span className="sm:hidden">{t('report.buttonTextShort')}</span>
         </Button>
       </DialogTrigger>
       
@@ -96,20 +98,18 @@ export function ReportCase({ onReportSubmitted }: ReportCaseProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Heart className="text-primary" weight="fill" />
-            Report Someone Who Needs Help
+            {t('report.title')}
           </DialogTitle>
           <p id="report-dialog-description" className="text-sm text-muted-foreground">
-            Share the location and details of someone who could use community assistance
+            {t('report.subtitle')}
           </p>
-        </DialogHeader>
-        
-        <div className="space-y-4 py-4">
+        </DialogHeader>        <div className="space-y-4 py-4">
           {/* Location Status */}
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div className="flex items-center gap-2">
               <MapPin className="text-primary" />
               <span className="text-sm font-medium">
-                {loading ? 'Getting location...' : location ? 'Location ready' : 'Location needed'}
+                {loading ? t('report.location.getting') : location ? t('report.location.ready') : t('report.location.needed')}
               </span>
             </div>
             {!location && !loading && (
@@ -119,7 +119,7 @@ export function ReportCase({ onReportSubmitted }: ReportCaseProps) {
                 onClick={getCurrentLocation}
                 disabled={loading}
               >
-                Get Location
+                {t('report.location.getLocation')}
               </Button>
             )}
           </div>
@@ -132,24 +132,14 @@ export function ReportCase({ onReportSubmitted }: ReportCaseProps) {
           
           {/* Case Type */}
           <div className="space-y-2">
-            <Label htmlFor="case-type">Who needs help?</Label>
+            <Label htmlFor="case-type">{t('report.whoNeedsHelp')}</Label>
             <Select value={type} onValueChange={(value: 'homeless' | 'animal') => setType(value)}>
               <SelectTrigger id="case-type">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="homeless">
-                  <div className="flex items-center gap-2">
-                    <Heart size={16} />
-                    Person experiencing homelessness
-                  </div>
-                </SelectItem>
-                <SelectItem value="animal">
-                  <div className="flex items-center gap-2">
-                    <Dog size={16} />
-                    Stray or injured animal
-                  </div>
-                </SelectItem>
+                <SelectItem value="homeless">{t('report.personHomeless')}</SelectItem>
+                <SelectItem value="animal">{t('report.strayAnimal')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -157,7 +147,7 @@ export function ReportCase({ onReportSubmitted }: ReportCaseProps) {
           {/* Description */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="description">What kind of help is needed?</Label>
+              <Label htmlFor="description">{t('report.whatKindOfHelp')}</Label>
               <VoiceControls 
                 onVoiceInput={(text) => setDescription(text)}
                 disabled={isSubmitting}
@@ -166,8 +156,8 @@ export function ReportCase({ onReportSubmitted }: ReportCaseProps) {
             <Textarea
               id="description"
               placeholder={type === 'homeless' 
-                ? "e.g., Person needs food, warm blanket, or shelter information" 
-                : "e.g., Injured dog needs water and veterinary care"
+                ? t('report.placeholders.person')
+                : t('report.placeholders.animal')
               }
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -181,28 +171,28 @@ export function ReportCase({ onReportSubmitted }: ReportCaseProps) {
           
           {/* Urgency */}
           <div className="space-y-2">
-            <Label htmlFor="urgency">Urgency level</Label>
+            <Label htmlFor="urgency">{t('report.urgencyLevel')}</Label>
             <Select value={urgency} onValueChange={(value: 'low' | 'medium' | 'high') => setUrgency(value)}>
               <SelectTrigger id="urgency">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="low">
-                  <div className="flex items-center justify-between w-full">
-                    <span>Low - General assistance</span>
-                    <Badge variant="secondary" className="ml-2">Low</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="w-2 h-2 p-0"></Badge>
+                    <span>{t('report.urgencyDesc.low')}</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="medium">
-                  <div className="flex items-center justify-between w-full">
-                    <span>Medium - Needs attention soon</span>
-                    <Badge variant="default" className="ml-2">Medium</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="default" className="w-2 h-2 p-0 bg-yellow-500"></Badge>
+                    <span>{t('report.urgencyDesc.medium')}</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="high">
-                  <div className="flex items-center justify-between w-full">
-                    <span>High - Urgent situation</span>
-                    <Badge variant="destructive" className="ml-2">High</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="destructive" className="w-2 h-2 p-0"></Badge>
+                    <span>{t('report.urgencyDesc.high')}</span>
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -216,11 +206,11 @@ export function ReportCase({ onReportSubmitted }: ReportCaseProps) {
             className="w-full mt-6"
             size="lg"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Report'}
+            {isSubmitting ? t('common.loading') : t('common.submit')}
           </Button>
           
           <p className="text-xs text-muted-foreground text-center">
-            Reports are anonymous and respectful. Emergency situations should contact local services directly.
+            {t('report.disclaimer')}
           </p>
         </div>
       </DialogContent>

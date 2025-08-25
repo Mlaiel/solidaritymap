@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useTranslation } from '@/hooks/useTranslation';
 import { 
   Heart, 
   MapPin, 
@@ -20,57 +21,58 @@ import {
 } from '@phosphor-icons/react';
 
 export function QuickStartGuide() {
+  const { t } = useTranslation();
   const steps = [
     {
       icon: MapPin,
-      title: "See someone who needs help?",
-      description: "If you encounter someone experiencing homelessness or a stray animal that needs assistance",
-      action: "Report their location and needs",
+      title: t('quickStart.steps.seeNeedsHelp'),
+      description: t('quickStart.steps.seeNeedsHelpDesc'),
+      action: t('quickStart.steps.reportLocation'),
       color: "primary"
     },
     {
       icon: Bell,
-      title: "Want to help others?",
-      description: "Set up notifications to receive alerts when people or animals need help in your area",
-      action: "Configure your volunteer settings",
+      title: t('quickStart.steps.wantToHelp'),
+      description: t('quickStart.steps.wantToHelpDesc'),
+      action: t('quickStart.steps.configureSettings'),
       color: "accent"
     },
     {
       icon: Users,
-      title: "Respond to requests",
-      description: "When you see a case you can help with, mark it as 'in progress' and provide assistance",
-      action: "Browse current cases",
+      title: t('quickStart.steps.respondToRequests'),
+      description: t('quickStart.steps.respondToRequestsDesc'),
+      action: t('quickStart.steps.browseCases'),
       color: "success"
     },
     {
       icon: CheckCircle,
-      title: "Make a difference",
-      description: "After helping, mark the case as 'helped' to let the community know",
-      action: "Track your impact",
+      title: t('quickStart.steps.makeDifference'),
+      description: t('quickStart.steps.makeDifferenceDesc'),
+      action: t('quickStart.steps.trackImpact'),
       color: "success"
     }
   ];
 
   const emergencyInfo = [
     {
-      situation: "Medical emergency",
-      action: "Call emergency services immediately",
-      note: "Life-threatening situations require professional help"
+      situation: t('quickStart.emergency.medical'),
+      action: t('quickStart.emergency.medicalAction'),
+      note: t('quickStart.emergency.medicalNote')
     },
     {
-      situation: "Severe weather",
-      action: "Direct to nearest shelter or warming center",
-      note: "Know your local emergency shelter locations"
+      situation: t('quickStart.emergency.weather'),
+      action: t('quickStart.emergency.weatherAction'),
+      note: t('quickStart.emergency.weatherNote')
     },
     {
-      situation: "Mental health crisis",
-      action: "Contact mental health crisis line",
-      note: "Many areas have 24/7 mental health support"
+      situation: t('quickStart.emergency.mental'),
+      action: t('quickStart.emergency.mentalAction'),
+      note: t('quickStart.emergency.mentalNote')
     },
     {
-      situation: "Injured animal",
-      action: "Contact local animal control or vet",
-      note: "Don't attempt to move seriously injured animals"
+      situation: t('quickStart.emergency.animal'),
+      action: t('quickStart.emergency.animalAction'),
+      note: t('quickStart.emergency.animalNote')
     }
   ];
 
@@ -79,7 +81,7 @@ export function QuickStartGuide() {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Info className="mr-2" size={16} />
-          Quick Start Guide
+          {t('quickStart.quickStartGuide')}
         </Button>
       </DialogTrigger>
       
@@ -87,7 +89,7 @@ export function QuickStartGuide() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Heart className="text-primary" weight="fill" />
-            How SolidarityMap-AI Works
+            {t('quickStart.howItWorks')}
           </DialogTitle>
         </DialogHeader>
 
@@ -121,13 +123,12 @@ export function QuickStartGuide() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <PhoneCall className="text-destructive" />
-                Emergency Situations
+                {t('quickStart.emergency.title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-sm text-muted-foreground mb-3">
-                Always contact professional emergency services for life-threatening situations. 
-                This platform is for community support, not emergency response.
+                {t('quickStart.emergency.description')}
               </p>
               
               <div className="space-y-3">
@@ -145,28 +146,28 @@ export function QuickStartGuide() {
           {/* Community Guidelines */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Community Guidelines</CardTitle>
+              <CardTitle className="text-base">{t('quickStart.guidelines.title')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex items-start gap-2">
                 <CheckCircle className="text-green-600 mt-1 flex-shrink-0" size={16} />
-                <span><strong>Respect dignity:</strong> Treat everyone with compassion and respect</span>
+                <span><strong>{t('quickStart.guidelines.respectDignity')}</strong> {t('quickStart.guidelines.respectDignityDesc')}</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="text-green-600 mt-1 flex-shrink-0" size={16} />
-                <span><strong>Prioritize safety:</strong> Both your safety and others' safety come first</span>
+                <span><strong>{t('quickStart.guidelines.prioritizeSafety')}</strong> {t('quickStart.guidelines.prioritizeSafetyDesc')}</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="text-green-600 mt-1 flex-shrink-0" size={16} />
-                <span><strong>Be accurate:</strong> Provide clear, factual information in reports</span>
+                <span><strong>{t('quickStart.guidelines.beAccurate')}</strong> {t('quickStart.guidelines.beAccurateDesc')}</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="text-green-600 mt-1 flex-shrink-0" size={16} />
-                <span><strong>Follow through:</strong> Update case status to help coordinate community response</span>
+                <span><strong>{t('quickStart.guidelines.followThrough')}</strong> {t('quickStart.guidelines.followThroughDesc')}</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle className="text-green-600 mt-1 flex-shrink-0" size={16} />
-                <span><strong>Know your limits:</strong> Only offer help you can safely and appropriately provide</span>
+                <span><strong>{t('quickStart.guidelines.knowLimits')}</strong> {t('quickStart.guidelines.knowLimitsDesc')}</span>
               </div>
             </CardContent>
           </Card>
@@ -174,28 +175,28 @@ export function QuickStartGuide() {
           {/* What You Can Do */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Ways to Help</CardTitle>
+              <CardTitle className="text-base">{t('quickStart.help.title')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div className="space-y-1">
-                  <div className="font-medium">For People:</div>
+                  <div className="font-medium">{t('quickStart.forPeople')}</div>
                   <ul className="text-muted-foreground space-y-1">
-                    <li>• Food and water</li>
-                    <li>• Warm clothing/blankets</li>
-                    <li>• Hygiene items</li>
-                    <li>• Information about local services</li>
-                    <li>• Transportation assistance</li>
+                    <li>{t('quickStart.help.peopleFood')}</li>
+                    <li>{t('quickStart.help.peopleClothing')}</li>
+                    <li>{t('quickStart.help.peopleHygiene')}</li>
+                    <li>{t('quickStart.help.peopleInfo')}</li>
+                    <li>{t('quickStart.help.peopleTransport')}</li>
                   </ul>
                 </div>
                 <div className="space-y-1">
-                  <div className="font-medium">For Animals:</div>
+                  <div className="font-medium">{t('quickStart.forAnimals')}</div>
                   <ul className="text-muted-foreground space-y-1">
-                    <li>• Food and water</li>
-                    <li>• Temporary shelter</li>
-                    <li>• Veterinary care</li>
-                    <li>• Transport to animal services</li>
-                    <li>• Reporting to animal control</li>
+                    <li>{t('quickStart.help.animalFood')}</li>
+                    <li>{t('quickStart.help.animalShelter')}</li>
+                    <li>{t('quickStart.help.animalVet')}</li>
+                    <li>{t('quickStart.help.animalTransport')}</li>
+                    <li>{t('quickStart.help.animalControl')}</li>
                   </ul>
                 </div>
               </div>

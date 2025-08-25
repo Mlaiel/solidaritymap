@@ -37,9 +37,13 @@ import { VolunteerDashboard } from '@/components/VolunteerDashboard'
 import { VolunteerDirectory } from '@/components/VolunteerDirectory'
 import { VolunteerProfile } from '@/components/VolunteerProfile'
 import { EditVolunteerProfile } from '@/components/EditVolunteerProfile'
+import { LanguageSelector } from '@/components/LanguageSelector'
+import { LanguageTest } from '@/components/LanguageTest'
 import { sampleCases, sampleVolunteerProfiles } from '@/lib/sampleData'
+import { useTranslation } from '@/hooks/useTranslation'
 
 export default function App() {
+  const { t, isLoading } = useTranslation();
   const [activeTab, setActiveTab] = useState<string>('cases')
   const [cases, setCases] = useKV<CaseReport[]>('solidarity-cases', [])
   const [activities, setActivities] = useKV<VolunteerActivity[]>('volunteer-activities', [])
@@ -75,7 +79,7 @@ export default function App() {
         action: updatedCase.status === 'helped' ? 'helped' : 'started-helping',
         timestamp: new Date().toISOString(),
         location: updatedCase.location,
-        notes: `${updatedCase.status === 'helped' ? 'Completed' : 'Started'} assistance for ${updatedCase.type} case`
+        notes: `${updatedCase.status === 'helped' ? t('app.completed') : t('app.started')} ${t('app.assistanceFor')} ${updatedCase.type} ${t('app.case')}`
       }
       
       setActivities((currentActivities) => [...(currentActivities || []), newActivity])
@@ -160,20 +164,21 @@ export default function App() {
                 <Heart weight="fill" size={20} />
               </div>
               <div>
-                <h1 className="text-lg sm:text-xl font-bold text-foreground">SolidarityMap</h1>
-                <p className="text-xs text-muted-foreground hidden sm:block">Community care platform</p>
+                <h1 className="text-lg sm:text-xl font-bold text-foreground">{t('header.title')}</h1>
+                <p className="text-xs text-muted-foreground hidden sm:block">{t('header.subtitle')}</p>
               </div>
             </div>
             
             {/* Mobile Stats */}
             <div className="flex items-center gap-1 sm:gap-3">
+              <LanguageSelector />
               <div className="text-center px-2 py-1 bg-muted rounded-lg">
                 <div className="text-sm font-bold text-foreground">{stats.total}</div>
-                <div className="text-xs text-muted-foreground">Cases</div>
+                <div className="text-xs text-muted-foreground">{t('header.total')}</div>
               </div>
               <div className="text-center px-2 py-1 bg-accent/10 rounded-lg">
                 <div className="text-sm font-bold text-accent">{stats.helped}</div>
-                <div className="text-xs text-muted-foreground">Helped</div>
+                <div className="text-xs text-muted-foreground">{t('header.helped')}</div>
               </div>
               {stats.open > 0 && (
                 <Badge variant="destructive" className="flex items-center gap-1 text-xs px-2 py-1">
@@ -196,7 +201,7 @@ export default function App() {
             className="flex flex-col items-center gap-1 h-auto py-2 px-1"
           >
             <List size={18} />
-            <span className="text-xs">Cases</span>
+            <span className="text-xs">{t('nav.cases')}</span>
           </Button>
           <Button
             variant={activeTab === 'dashboard' ? 'default' : 'ghost'}
@@ -205,7 +210,7 @@ export default function App() {
             className="flex flex-col items-center gap-1 h-auto py-2 px-1"
           >
             <ChartBar size={18} />
-            <span className="text-xs">Stats</span>
+            <span className="text-xs">{t('nav.stats')}</span>
           </Button>
           <Button
             variant={activeTab === 'report' ? 'default' : 'ghost'}
@@ -214,7 +219,7 @@ export default function App() {
             className="flex flex-col items-center gap-1 h-auto py-2 px-1 bg-primary text-primary-foreground rounded-full"
           >
             <Plus size={20} />
-            <span className="text-xs">Report</span>
+            <span className="text-xs">{t('nav.report')}</span>
           </Button>
           <Button
             variant={activeTab === 'volunteers' ? 'default' : 'ghost'}
@@ -223,7 +228,7 @@ export default function App() {
             className="flex flex-col items-center gap-1 h-auto py-2 px-1"
           >
             <Users size={18} />
-            <span className="text-xs">People</span>
+            <span className="text-xs">{t('nav.people')}</span>
           </Button>
           <Button
             variant={activeTab === 'settings' ? 'default' : 'ghost'}
@@ -232,7 +237,7 @@ export default function App() {
             className="flex flex-col items-center gap-1 h-auto py-2 px-1"
           >
             <Gear size={18} />
-            <span className="text-xs">Settings</span>
+            <span className="text-xs">{t('nav.settings')}</span>
           </Button>
         </div>
       </div>
@@ -245,23 +250,27 @@ export default function App() {
             <TabsList className="grid w-full sm:w-auto grid-cols-5">
               <TabsTrigger value="cases" className="flex items-center gap-2">
                 <List size={16} />
-                Cases
+                {t('nav.cases')}
               </TabsTrigger>
               <TabsTrigger value="dashboard" className="flex items-center gap-2">
                 <ChartBar size={16} />
-                Dashboard
+                {t('nav.dashboard')}
               </TabsTrigger>
               <TabsTrigger value="volunteers" className="flex items-center gap-2">
                 <Users size={16} />
-                Volunteers
+                {t('nav.volunteers')}
               </TabsTrigger>
               <TabsTrigger value="report" className="flex items-center gap-2">
                 <Plus size={16} />
-                Report
+                {t('nav.report')}
               </TabsTrigger>
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <Gear size={16} />
-                Settings
+                {t('nav.settings')}
+              </TabsTrigger>
+              <TabsTrigger value="langtest" className="flex items-center gap-2">
+                <Info size={16} />
+                Lang Test
               </TabsTrigger>
             </TabsList>
 
@@ -290,10 +299,10 @@ export default function App() {
           <TabsContent value="cases" className="space-y-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Community Assistance Requests</h2>
+                <h2 className="text-lg font-semibold">{t('app.communityAssistanceRequests')}</h2>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs">
-                    Live updates
+                    {t('app.liveUpdates')}
                   </Badge>
                   {((cases || []).length === 0 || (volunteers || []).length === 0) && (
                     <Button 
@@ -301,7 +310,7 @@ export default function App() {
                       size="sm" 
                       onClick={loadSampleData}
                     >
-                      Load Sample Data
+                      {t('app.loadSampleData')}
                     </Button>
                   )}
                 </div>
@@ -348,9 +357,9 @@ export default function App() {
           <TabsContent value="report" className="space-y-6">
             <div className="max-w-2xl mx-auto space-y-6">
               <div className="text-center space-y-2">
-                <h2 className="text-2xl font-bold">Report Someone Who Needs Help</h2>
+                <h2 className="text-2xl font-bold">{t('app.reportSomeoneNeedsHelp')}</h2>
                 <p className="text-muted-foreground">
-                  Help connect community members with those who need assistance
+                  {t('app.helpConnectCommunity')}
                 </p>
               </div>
               
@@ -365,7 +374,7 @@ export default function App() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Info className="text-primary" />
-                    Reporting Guidelines
+                    {t('app.reportingGuidelines')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
@@ -373,19 +382,19 @@ export default function App() {
                     <div className="flex items-start gap-2">
                       <Shield className="text-green-600 mt-1 flex-shrink-0" size={16} />
                       <div>
-                        <strong>Respect dignity:</strong> Always approach with compassion and respect for privacy
+                        <strong>{t('app.respectDignity')}</strong> {t('app.respectDignityDesc')}
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <Shield className="text-green-600 mt-1 flex-shrink-0" size={16} />
                       <div>
-                        <strong>Be accurate:</strong> Provide clear, factual descriptions of assistance needed
+                        <strong>{t('app.beAccurate')}</strong> {t('app.beAccurateDesc')}
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <Shield className="text-green-600 mt-1 flex-shrink-0" size={16} />
                       <div>
-                        <strong>Emergency first:</strong> For life-threatening situations, call emergency services immediately
+                        <strong>{t('app.emergencyFirst')}</strong> {t('app.emergencyFirstDesc')}
                       </div>
                     </div>
                   </div>
@@ -446,6 +455,10 @@ export default function App() {
               <VolunteerSettings />
             </div>
           </TabsContent>
+
+          <TabsContent value="langtest" className="space-y-6">
+            <LanguageTest />
+          </TabsContent>
         </Tabs>
       </main>
 
@@ -457,11 +470,10 @@ export default function App() {
             <div className="space-y-3">
               <h3 className="font-semibold flex items-center gap-2">
                 <Heart className="text-primary" size={18} />
-                About SolidarityMap-AI
+                {t('app.aboutSolidarityMap')}
               </h3>
               <p className="text-sm text-muted-foreground">
-                A community-driven platform connecting those who need help with volunteers ready to assist. 
-                Building solidarity through compassionate technology.
+                {t('app.aboutSolidarityMapDesc')}
               </p>
             </div>
 
@@ -469,23 +481,21 @@ export default function App() {
             <div className="space-y-3">
               <h3 className="font-semibold flex items-center gap-2">
                 <Phone className="text-destructive" size={18} />
-                Emergency Notice
+                {t('app.emergencyNotice')}
               </h3>
               <p className="text-sm text-muted-foreground">
-                For life-threatening emergencies, always contact local emergency services first. 
-                This platform supplements but does not replace professional emergency response.
+                {t('app.emergencyNoticeDesc')}
               </p>
             </div>
 
             {/* Attribution */}
             <div className="space-y-3">
-              <h3 className="font-semibold">Open Source</h3>
+              <h3 className="font-semibold">{t('app.openSource')}</h3>
               <div className="text-sm text-muted-foreground space-y-1">
-                <p><strong>Owner:</strong> Fahed Mlaiel</p>
-                <p><strong>Contact:</strong> mlaiel@live.de</p>
+                <p><strong>{t('footer.owner')}:</strong> Fahed Mlaiel</p>
+                <p><strong>{t('footer.contact')}:</strong> mlaiel@live.de</p>
                 <p className="text-xs">
-                  Attribution required in all copies, forks, and derivatives. 
-                  Free for non-commercial use.
+                  {t('app.attributionRequired')}
                 </p>
               </div>
             </div>
